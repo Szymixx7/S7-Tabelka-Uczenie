@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
@@ -1985,53 +1985,91 @@ function ensureHintBadge(td){
     td.appendChild(btn);
 }
 
-function renderHintOverlay(){
-    const td = hintOverlayState.td;
-    if(!td) return;
-    const currentInput = td.querySelector("input");
-    const answer = (currentInput?.dataset.answer || td.dataset.answer || "").trim();
-    const type = hintOverlayState.type;
-    const container = document.getElementById("hintContent");
-    if(!container) return;
+function renderHintInCell(td, type){
+    const inp = td.querySelector("input");
+    if(!inp) return;
+    const answer = (inp.dataset.answer || td.dataset.answer || "").trim();
+    td.querySelectorAll(".hintCombined,.hintMeta").forEach(el=>el.remove());
 
-    let html = "";
     if(type === "2"){
         const base = (answer.split(",")[0] || answer).trim();
-        html += `<div class="hintCombined" id="hintSquaresWrap"></div>`;
-        setTimeout(()=>{
-            const wrap = document.getElementById("hintSquaresWrap");
-            if(!wrap) return;
-            for(let i=0;i<base.length;i++){
-                const ch = base[i];
-                if(ch===" "){
-                    const gap = document.createElement("span");
-                    gap.className = "hintGap";
-                    wrap.appendChild(gap);
-                } else {
-                    const sq = document.createElement("span");
-                    sq.className = "hintSquare";
-                    sq.onclick = ()=>{ sq.textContent = ch; };
-                    wrap.appendChild(sq);
-                }
+        const wrap = document.createElement("div");
+        wrap.className = "hintCombined";
+        for(let i=0;i<base.length;i++){
+            const ch = base[i];
+            if(ch === " "){
+                const gap = document.createElement("span");
+                gap.className = "hintGap";
+                wrap.appendChild(gap);
+            } else {
+                const sq = document.createElement("span");
+                sq.className = "hintSquare";
+                sq.onclick = ()=>{ sq.textContent = ch; };
+                wrap.appendChild(sq);
             }
-        }, 0);
+        }
+        td.appendChild(wrap);
     } else {
         const words = answer ? answer.split(/\s+/).filter(Boolean).length : 0;
         const chars = answer.length;
-        html += `<div class="hintMeta" style="font-size:15px;">Znaki: ${chars}, wyrazy: ${words}</div>`;
+        const info = document.createElement("div");
+        info.className = "hintMeta";
+        info.textContent = `Znaki: ${chars}, wyrazy: ${words}`;
+        td.appendChild(info);
     }
-    html += `<div style="margin-top:12px;">
-        <input id="hintAnswerInput" style="width:100%; padding:8px; border:1px solid #bbb;" placeholder="Wpisz odpowiedz tutaj">
-        <button class="btn btn-main" style="margin-top:8px;" onclick="applyHintAnswerToQuiz()">Wpisz do quizu i sprawdz</button>
-    </div>`;
-    container.innerHTML = html;
+}
+
+function applyHintTypeToCell(td, type){
+    if(!td || !td.querySelector("input")) return;
+    td.dataset.hintActive = "1";
+    td.dataset.hintType = type || "1";
+    ensureHintBadge(td);
+    renderHintInCell(td, td.dataset.hintType);
+}
+
+function disableHintForCell(td){
+    if(!td) return;
+    td.dataset.hintActive = "0";
+    td.querySelectorAll(".hintCombined,.hintMeta,.hintBadgeBtn").forEach(el=>el.remove());
+    td.classList.remove("hasHintBadge");
+}
+
+function renderHintOverlay(){
+    const td = hintOverlayState.td;
+    if(!td) return;
+    const container = document.getElementById("hintContent");
+    if(!container) return;
+    const active = td.dataset.hintActive === "1";
+    const type = hintOverlayState.type || td.dataset.hintType || "1";
+    container.innerHTML = `
+        <div class="hintMeta" style="font-size:14px;">
+            Status: ${active ? "wlaczona" : "wylaczona"} | Typ: ${type === "2" ? "kwadraciki" : "znaki + wyrazy"}
+        </div>
+        <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn btn-secondary" onclick="setHintTypeFromOverlay('1')">Znaki + wyrazy</button>
+            <button class="btn btn-secondary" onclick="setHintTypeFromOverlay('2')">Laczony (kwadraciki)</button>
+            <button class="btn btn-danger" onclick="disableHintFromOverlay()">Wylacz podpowiedz</button>
+        </div>`;
+}
+
+function setHintTypeFromOverlay(type){
+    const td = hintOverlayState.td;
+    if(!td) return;
+    hintOverlayState.type = type;
+    applyHintTypeToCell(td, type);
+    renderHintOverlay();
+}
+
+function disableHintFromOverlay(){
+    const td = hintOverlayState.td;
+    if(!td) return;
+    disableHintForCell(td);
+    renderHintOverlay();
 }
 
 function openHintOverlay(td, forcedType){
     hintOverlayState.td = td;
-    hintOverlayState.type = forcedType || "1";
-    td.dataset.hintType = hintOverlayState.type;
-    ensureHintBadge(td);
+    hintOverlayState.type = forcedType || td.dataset.hintType || "1";
 
     let overlay = document.getElementById("hintOverlay");
     if(!overlay){
@@ -2044,8 +2082,8 @@ function openHintOverlay(td, forcedType){
         overlay.innerHTML = `
             <div style="max-width:700px; margin:40px auto; background:#fff; border-radius:10px; padding:16px;">
                 <div style="display:flex; gap:8px; margin-bottom:8px;">
-                    <button class="btn btn-secondary" onclick="hintOverlayState.type='1'; renderHintOverlay();">Znaki + wyrazy</button>
-                    <button class="btn btn-secondary" onclick="hintOverlayState.type='2'; renderHintOverlay();">Laczony (kwadraciki)</button>
+                    <button class="btn btn-secondary" onclick="setHintTypeFromOverlay('1')">Znaki + wyrazy</button>
+                    <button class="btn btn-secondary" onclick="setHintTypeFromOverlay('2')">Laczony (kwadraciki)</button>
                     <button class="btn btn-danger" style="margin-left:auto;" onclick="document.getElementById('hintOverlay').remove()">Zamknij</button>
                 </div>
                 <div id="hintContent"></div>
@@ -2228,6 +2266,8 @@ updateCellClickHandlers = function(){
                     td.dataset.firsttry = "0";
                     td.dataset.discovered = "0";
                     td.dataset.quizinput = "1";
+                    td.dataset.hintActive = "0";
+                    td.classList.remove("hasHintBadge");
                     td.innerHTML = `<input data-answer="${answer}" data-options="${options}" data-tries="0" data-maxtries="${savedConfig.maxCell||-1}" onkeydown="checkInput(event,this)">`;
                     setupAutoEnter();
                 }
