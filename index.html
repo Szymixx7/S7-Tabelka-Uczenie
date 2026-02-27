@@ -1436,13 +1436,14 @@ importTable = function(file){
 };
 
 function parseTableInfoText(raw){
-    const out = { autor: "-", data: "-", opis: "-" };
+    const out = { autor: "-", data: "-", opis: "-", visibility: "tak" };
     if(!raw) return out;
     try{
         const j = JSON.parse(raw);
         out.autor = j.autor || j.author || out.autor;
         out.data = j.dataUtworzenia || j.data || j.date || out.data;
         out.opis = j.opis || j.description || out.opis;
+        out.visibility = (j.visibility || j.widocznosc || out.visibility);
         return out;
     } catch(_) {}
     raw.split(/\r?\n/).forEach(line=>{
@@ -1453,6 +1454,7 @@ function parseTableInfoText(raw){
         if(k.includes("autor")) out.autor = v;
         else if(k.includes("data")) out.data = v;
         else if(k.includes("opis")) out.opis = v;
+        else if(k.includes("visibility") || k.includes("widoczn")) out.visibility = v;
     });
     return out;
 }
@@ -1466,25 +1468,58 @@ async function openDbFilePicker(){
 }
 
 function getDirectoryLinksFromHtml(html){
-    const doc = new DOMParser().parseFromString(html, "text/html");
     const out = new Set();
     const baseUrl = new URL(DB_BASE_PATH, window.location.href);
     const basePath = baseUrl.pathname.endsWith("/") ? baseUrl.pathname : (baseUrl.pathname + "/");
 
-    doc.querySelectorAll("a[href]").forEach(a=>{
-        const href = a.getAttribute("href") || "";
-        if(!href) return;
-        let url;
-        try { url = new URL(href, baseUrl.href); } catch(_) { return; }
-        if(url.origin !== window.location.origin) return;
-        if(!url.pathname.startsWith(basePath)) return;
+    // 1) DOM links
+    try{
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        doc.querySelectorAll("a[href]").forEach(a=>{
+            const href = (a.getAttribute("href") || "").trim();
+            if(!href || href === "../" || href.startsWith("?") || href.startsWith("#")) return;
+            let u;
+            try { u = new URL(href, baseUrl.href); } catch(_) { return; }
+            if(u.origin !== window.location.origin) return;
+            if(!u.pathname.startsWith(basePath)) return;
+            let rel = decodeURIComponent(u.pathname.slice(basePath.length)).replace(/\/+$/,"");
+            if(!rel || rel.includes("/")) return;
+            if(rel.toLowerCase().endsWith(".json")) return;
+            out.add(rel);
+        });
+    } catch(_){}
 
-        const rel = decodeURIComponent(url.pathname.slice(basePath.length)).replace(/\/+$/,"");
-        if(!rel) return;
-        if(rel.includes("/")) return; // tylko 1 poziom: bazatabelek/<folder>
+    // 2) Raw regex fallback (Apache/Nginx/custom index)
+    const re = /href\s*=\s*["']([^"']+)["']/gi;
+    let m;
+    while((m = re.exec(html)) !== null){
+        const href = (m[1] || "").trim();
+        if(!href || href === "../" || href.startsWith("?") || href.startsWith("#")) continue;
+        let u;
+        try { u = new URL(href, baseUrl.href); } catch(_) { continue; }
+        if(u.origin !== window.location.origin) continue;
+        if(!u.pathname.startsWith(basePath)) continue;
+        let rel = decodeURIComponent(u.pathname.slice(basePath.length)).replace(/\/+$/,"");
+        if(!rel || rel.includes("/")) continue;
+        if(rel.toLowerCase().endsWith(".json")) continue;
         out.add(rel);
-    });
+    }
     return Array.from(out);
+}
+
+function parseDateSafe(value){
+    if(!value || value === "-") return 0;
+    const t = Date.parse(value);
+    if(!Number.isNaN(t)) return t;
+    const m = String(value).match(/^(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{4})$/);
+    if(m){
+        const dd = m[1].padStart(2,"0");
+        const mm = m[2].padStart(2,"0");
+        const yyyy = m[3];
+        const t2 = Date.parse(`${yyyy}-${mm}-${dd}`);
+        if(!Number.isNaN(t2)) return t2;
+    }
+    return 0;
 }
 
 async function showDbOverlay(){
@@ -1539,6 +1574,7 @@ async function showDbOverlay(){
             if(r.ok) infoText = await r.text();
         } catch(_){}
         const meta = parseTableInfoText(infoText);
+        if(String(meta.visibility || "tak").toLowerCase() !== "tak") continue;
         items.push({ folder: folderName, jsonUrl, tableDataObj, meta });
     }
 
@@ -1547,12 +1583,15 @@ async function showDbOverlay(){
         return;
     }
 
+    items.sort((a,b)=>parseDateSafe(b.meta.data)-parseDateSafe(a.meta.data));
+
     list.innerHTML = items.map((x,i)=>`
         <div class="dbItem">
             <div><b>${x.folder}</b></div>
             <div>Autor: ${x.meta.autor}</div>
             <div>Data utworzenia: ${x.meta.data}</div>
             <div>Opis: ${x.meta.opis}</div>
+            <div>Visibility: ${x.meta.visibility}</div>
             <button class="btn btn-main" onclick="loadDbItem(${i})">Wczytaj</button>
             <button class="btn btn-secondary" onclick="downloadDbItem(${i})">Pobierz</button>
         </div>
@@ -1584,7 +1623,6 @@ function downloadDbItem(index){
 // ---- PATCH v6.2 ----
 let ignoreWrongStreakStats = false;
 let hintOverlayState = { td: null, type: "1" };
-let dbBaseDirHandle = null;
 
 function getOriginalCellKey(td){
     const r = td.dataset.origr ?? td.dataset.r;
