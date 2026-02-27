@@ -1487,6 +1487,7 @@ function getDirectoryLinksFromHtml(html){
     const out = new Set();
     const baseUrl = new URL(dbResolvedBasePath || DB_BASE_PATH, window.location.href);
     const basePath = baseUrl.pathname.endsWith("/") ? baseUrl.pathname : (baseUrl.pathname + "/");
+    const safeDecode = (v) => { try { return decodeURIComponent(v); } catch(_) { return v; } };
 
     // 1) DOM links
     try{
@@ -1498,7 +1499,7 @@ function getDirectoryLinksFromHtml(html){
             try { u = new URL(href, baseUrl.href); } catch(_) { return; }
             if(u.origin !== window.location.origin) return;
             if(!u.pathname.startsWith(basePath)) return;
-            let rel = decodeURIComponent(u.pathname.slice(basePath.length)).replace(/\/+$/,"");
+            let rel = safeDecode(u.pathname.slice(basePath.length)).replace(/\/+$/,"");
             if(!rel || rel.includes("/")) return;
             if(rel.toLowerCase().endsWith(".json")) return;
             out.add(rel);
@@ -1515,7 +1516,7 @@ function getDirectoryLinksFromHtml(html){
         try { u = new URL(href, baseUrl.href); } catch(_) { continue; }
         if(u.origin !== window.location.origin) continue;
         if(!u.pathname.startsWith(basePath)) continue;
-        let rel = decodeURIComponent(u.pathname.slice(basePath.length)).replace(/\/+$/,"");
+        let rel = safeDecode(u.pathname.slice(basePath.length)).replace(/\/+$/,"");
         if(!rel || rel.includes("/")) continue;
         if(rel.toLowerCase().endsWith(".json")) continue;
         out.add(rel);
@@ -1532,6 +1533,26 @@ function getDirectoryLinksFromHtml(html){
         if(rel.toLowerCase().endsWith(".json")) continue;
         out.add(rel);
     }
+
+    // 4) Fallback: wyciaganie folderu ze sciezek do tabelka.json
+    const p1 = /(?:^|["'\s>])(?:\.?\/)?bazatabelek\/([^\/"'?<>\n\r]+)\/tabelka\.json/gi;
+    let m1;
+    while((m1 = p1.exec(html)) !== null){
+        const rel = safeDecode((m1[1] || "").trim());
+        if(rel) out.add(rel);
+    }
+
+    // 5) Fallback: wyciaganie folderu z lokalnych sciezek "<folder>/tabelka.json"
+    const p2 = /(?:^|["'\s>])([^\/"'?<>\n\r]+)\/tabelka\.json/gi;
+    let m2;
+    while((m2 = p2.exec(html)) !== null){
+        const rel = safeDecode((m2[1] || "").trim());
+        if(!rel) continue;
+        if(rel === "." || rel === "..") continue;
+        if(rel.toLowerCase() === "bazatabelek") continue;
+        out.add(rel);
+    }
+
     return Array.from(out);
 }
 
