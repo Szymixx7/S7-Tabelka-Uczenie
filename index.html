@@ -1504,6 +1504,18 @@ function getDirectoryLinksFromHtml(html){
         if(rel.toLowerCase().endsWith(".json")) continue;
         out.add(rel);
     }
+
+    // 3) Fallback po samym tekscie (gdy listing jest niestandardowy)
+    const txtRe = /([^\s"'<>\[\]]+?)\/(?=\s|<|$)/g;
+    let t;
+    while((t = txtRe.exec(html)) !== null){
+        const rel = t[1].trim();
+        if(!rel) continue;
+        if(rel === "." || rel === "..") continue;
+        if(rel.includes("/")) continue;
+        if(rel.toLowerCase().endsWith(".json")) continue;
+        out.add(rel);
+    }
     return Array.from(out);
 }
 
@@ -1541,7 +1553,7 @@ async function showDbOverlay(){
     const list = document.getElementById("dbList");
     let baseHtml = "";
     try{
-        const res = await fetch(DB_BASE_PATH + "?t=" + Date.now());
+        const res = await fetch(DB_BASE_PATH);
         if(!res.ok) throw new Error("Brak folderu");
         baseHtml = await res.text();
     } catch(_){
@@ -1563,14 +1575,14 @@ async function showDbOverlay(){
 
         let tableDataObj = null;
         try{
-            const resJson = await fetch(jsonUrl + "?t=" + Date.now());
+            const resJson = await fetch(jsonUrl);
             if(!resJson.ok) continue;
             tableDataObj = await resJson.json();
         } catch(_){ continue; }
 
         let infoText = "";
         try{
-            const r = await fetch(infoUrl + "?t=" + Date.now());
+            const r = await fetch(infoUrl);
             if(r.ok) infoText = await r.text();
         } catch(_){}
         const meta = parseTableInfoText(infoText);
@@ -1579,7 +1591,7 @@ async function showDbOverlay(){
     }
 
     if(!items.length){
-        list.innerHTML = "Nie znaleziono poprawnych tabelek. Oczekiwany uklad: bazatabelek/<nazwa>/tabelka.json";
+        list.innerHTML = "Nie znaleziono poprawnych tabelek. Oczekiwany uklad: bazatabelek/<nazwa>/tabelka.json (visibility: tak).";
         return;
     }
 
@@ -1603,7 +1615,7 @@ async function loadDbItem(index){
     const item = window.__dbItems?.[index];
     if(!item) return;
     try{
-        const data = item.tableDataObj || (await (await fetch(item.jsonUrl + "?t=" + Date.now())).json());
+        const data = item.tableDataObj || (await (await fetch(item.jsonUrl)).json());
         importTableData(data);
         document.getElementById("dbOverlay")?.remove();
     } catch(_){
