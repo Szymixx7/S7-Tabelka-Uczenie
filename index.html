@@ -1462,14 +1462,30 @@ function parseTableInfoText(raw){
 const DB_BASE_PATH = "bazatabelek/";
 const DB_TABLE_JSON = "tabelka.json";
 const DB_INFO_JSON = "tabelkainfo.json";
+let dbResolvedBasePath = DB_BASE_PATH;
 
 async function openDbFilePicker(){
     await showDbOverlay();
 }
 
+async function fetchBaseListing(){
+    const candidates = ["./bazatabelek/", "bazatabelek/", "/bazatabelek/"];
+    for(const candidate of candidates){
+        try{
+            const res = await fetch(candidate, { cache: "no-store" });
+            const txt = await res.text();
+            // Niektóre serwery zwracają listing nawet przy statusie != 2xx
+            if(txt && (txt.includes("href=") || txt.includes("<a") || txt.length > 50)){
+                return { basePath: candidate, html: txt };
+            }
+        } catch(_){}
+    }
+    return null;
+}
+
 function getDirectoryLinksFromHtml(html){
     const out = new Set();
-    const baseUrl = new URL(DB_BASE_PATH, window.location.href);
+    const baseUrl = new URL(dbResolvedBasePath || DB_BASE_PATH, window.location.href);
     const basePath = baseUrl.pathname.endsWith("/") ? baseUrl.pathname : (baseUrl.pathname + "/");
 
     // 1) DOM links
@@ -1551,15 +1567,15 @@ async function showDbOverlay(){
     document.body.appendChild(overlay);
 
     const list = document.getElementById("dbList");
-    let baseHtml = "";
-    try{
-        const res = await fetch(DB_BASE_PATH);
-        if(!res.ok) throw new Error("Brak folderu");
-        baseHtml = await res.text();
-    } catch(_){
-        list.innerHTML = `Nie mozna odczytac folderu <b>${DB_BASE_PATH}</b>.<br>Upewnij sie, ze plik HTML jest uruchomiony z serwera i obok jest folder bazatabelek.`;
+    const listing = await fetchBaseListing();
+    if(!listing){
+        list.innerHTML = `Nie mozna odczytac folderu <b>bazatabelek/</b>.<br>
+        Sprawdzone sciezki: <code>./bazatabelek/</code>, <code>bazatabelek/</code>, <code>/bazatabelek/</code>.<br>
+        Upewnij sie, ze serwer pozwala zwrocic listing katalogu.`;
         return;
     }
+    dbResolvedBasePath = listing.basePath;
+    const baseHtml = listing.html;
 
     const folders = getDirectoryLinksFromHtml(baseHtml);
     if(!folders.length){
@@ -1569,7 +1585,7 @@ async function showDbOverlay(){
 
     const items = [];
     for(const folderName of folders){
-        const base = `${DB_BASE_PATH}${encodeURIComponent(folderName)}/`;
+        const base = `${dbResolvedBasePath}${encodeURIComponent(folderName)}/`;
         const jsonUrl = `${base}${DB_TABLE_JSON}`;
         const infoUrl = `${base}${DB_INFO_JSON}`;
 
