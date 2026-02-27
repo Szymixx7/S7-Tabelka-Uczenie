@@ -113,6 +113,11 @@ td:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px rgba(19,183,
 .btn-main { box-shadow: 0 0 14px rgba(19,183,255,0.25); }
 .btn-danger { box-shadow: 0 0 14px rgba(255,77,125,0.3); }
 .btn-secondary { box-shadow: 0 0 14px rgba(138,162,255,0.28); }
+.btn.active {
+    border-color: rgba(105,229,255,0.95);
+    box-shadow: 0 0 0 1px rgba(105,229,255,0.55), 0 0 20px rgba(19,183,255,0.6), 0 8px 24px rgba(0,0,0,.35);
+    transform: translateY(-1px);
+}
 @keyframes spinRing { to { transform: rotate(360deg); } }
 #controls {
     margin-top: 15px;
@@ -153,7 +158,7 @@ td:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px rgba(19,183,
 .editorModeLabel { margin: 8px 0; font-weight: bold; }
 .hintMeta { margin-top: 6px; font-size: 12px; color: #112; background: #d7fff0; padding: 4px 6px; border-radius: 6px; }
 .hintCombined { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
-.hintSquare { width: 18px; height: 18px; border: 1px solid #333; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; background: #fff; }
+.hintSquare { width: 18px; height: 18px; border: 1px solid #333; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #0b1221; cursor: pointer; background: #fff; }
 .hintGap { width: 14px; height: 18px; display: inline-block; }
 .excludeFixed { box-shadow: inset -6px 0 0 #ffd400; }
 .hintBadgeBtn { position:absolute; right:2px; top:2px; width:16px; height:16px; border:none; border-radius:3px; background:#ffd400; cursor:pointer; font-size:11px; line-height:16px; padding:0; }
@@ -219,13 +224,13 @@ input[type="checkbox"] { accent-color: #58d8ff; }
 
 <div id="controls" style="display:none;">
 <p>Opcje:</p>
-<button class="btn btn-secondary" onclick="setMode('random')">Losowe</button>
-<button class="btn btn-secondary" onclick="setMode('fixed')">Losowe wartościowe</button>
+<button id="modeRandomBtn" class="btn btn-secondary" onclick="setMode('random')">Losowe</button>
+<button id="modeFixedBtn" class="btn btn-secondary" onclick="setMode('fixed')">Losowe wartościowe</button>
 <input type="number" id="fixedCount" value="-1" style="width:60px; display:inline-block; margin-left:10px;" title="Ile komórek na linijkę zakryć"><br><br>
-<button class="btn btn-secondary" onclick="setMode('manual')">Manualne</button>
-<button class="btn btn-secondary" onclick="setMode('info')">Zaznaczanie informacyjne</button>
-<button class="btn btn-secondary" onclick="setMode('excludeFixed')">Ignoruj w losowe wartościowe</button>
-<button class="btn btn-secondary" onclick="toggleManualSelect()">Manualny tryb wyboru</button><br><br>
+<button id="modeManualBtn" class="btn btn-secondary" onclick="setMode('manual')">Manualne</button>
+<button id="modeInfoBtn" class="btn btn-secondary" onclick="setMode('info')">Zaznaczanie informacyjne</button>
+<button id="modeExcludeFixedBtn" class="btn btn-secondary" onclick="setMode('excludeFixed')">Ignoruj w losowe wartościowe</button>
+<button id="manualSelectBtn" class="btn btn-secondary" onclick="toggleManualSelect()">Manualny tryb wyboru</button><br><br>
 
 Globalna liczba prób: <input type="number" id="maxTries" value="-1" style="width:60px;"> (-1 = brak limitu)<br>
 Ilość prób na komórkę: <input type="number" id="cellTries" value="-1" style="width:60px;"> (-1 = brak limitu)<br>
@@ -241,9 +246,9 @@ Limit czasu (sekundy): <input type="number" id="timeLimit" value="-1" style="wid
 <div id="extraTextDisplay" style="display:none"></div>
 
 <div id="quizControls" style="display:none; margin-top:15px;">
-<button class="btn btn-secondary" onclick="enterDiscoverMode()">Odkryj wybrane</button>
-<button class="btn btn-secondary" onclick="enterRenewMode()">Odnów wybrane</button>
-<button class="btn btn-secondary" onclick="armHintMode()">Podpowiedź (1 klik)</button>
+<button id="discoverModeBtn" class="btn btn-secondary" onclick="enterDiscoverMode()">Odkryj wybrane</button>
+<button id="renewModeBtn" class="btn btn-secondary" onclick="enterRenewMode()">Odnów wybrane</button>
+<button id="hintModeBtn" class="btn btn-secondary" onclick="armHintMode()">Podpowiedź (1 klik)</button>
 <button class="btn btn-secondary" onclick="showAll()">Pokaż wszystko</button>
 <button id="backBtn" class="btn btn-secondary" onclick="backToMenu()" style="display:inline-block;">Wróć</button>
 </div>
@@ -627,6 +632,7 @@ function enterDiscoverMode(){
     }
     discoverMode = true;
     renewMode = false;
+    refreshModeIndicators();
     updateCellClickHandlers();
 
     if(!document.getElementById("discoverDoneBtn")){
@@ -642,6 +648,7 @@ function enterDiscoverMode(){
                 td.classList.remove("toDiscover");
             });
             discoverMode = false;
+            refreshModeIndicators();
             updateCellClickHandlers();
             btn.remove();
         };
@@ -653,6 +660,7 @@ function enterDiscoverMode(){
 function enterRenewMode(){
     renewMode = !renewMode;
     discoverMode = false;
+    refreshModeIndicators();
     updateCellClickHandlers();
     alert("Tryb odnów " + (renewMode ? "włączony" : "wyłączony"));
 }
@@ -704,6 +712,7 @@ function showAll(){
 }
 
 function backToMenu(){
+    refreshModeIndicators();
     stopTimer();
 
     const shuffle = document.getElementById("shuffleRows").checked;
@@ -810,11 +819,13 @@ function clearAll(){
     manualSelectMode = false;
     discoverMode = false;
     renewMode = false;
+    hintModeArmed = false;
 
     // reset input file (żeby nie pokazywało starego pliku)
     const importFile = document.getElementById("importFile");
     if(importFile) importFile.value = "";
 
+    refreshModeIndicators();
     stopTimer();
 }
 
@@ -1381,6 +1392,7 @@ backToMenu = function(){
     discoverMode = false;
     renewMode = false;
     hintModeArmed = false;
+    refreshModeIndicators();
 
     document.getElementById("extraText").value = savedConfig.extraText || "";
     document.getElementById("extraText").style.display = "block";
@@ -1403,13 +1415,13 @@ function openEditorWithData(data){
 
 function renderEditorView(){
     let html = `<div class="editorModeLabel">Tryb edycji: ${editorMode || "select"}</div>
-    <button class="btn btn-secondary" onclick="setEditorMode('add-col-left')">+ Kolumna lewo</button>
-    <button class="btn btn-secondary" onclick="setEditorMode('add-col-right')">+ Kolumna prawo</button>
-    <button class="btn btn-secondary" onclick="setEditorMode('add-row-up')">+ Wiersz gora</button>
-    <button class="btn btn-secondary" onclick="setEditorMode('add-row-down')">+ Wiersz dol</button>
-    <button class="btn btn-danger" onclick="setEditorMode('delete-col')">Usun kolumne</button>
-    <button class="btn btn-danger" onclick="setEditorMode('delete-row')">Usun wiersz</button>
-    <button class="btn btn-secondary" onclick="setEditorMode('select')">Wylacz tryb</button>`;
+    <button class="btn btn-secondary ${editorMode==='add-col-left'?'active':''}" onclick="setEditorMode('add-col-left')">+ Kolumna lewo</button>
+    <button class="btn btn-secondary ${editorMode==='add-col-right'?'active':''}" onclick="setEditorMode('add-col-right')">+ Kolumna prawo</button>
+    <button class="btn btn-secondary ${editorMode==='add-row-up'?'active':''}" onclick="setEditorMode('add-row-up')">+ Wiersz gora</button>
+    <button class="btn btn-secondary ${editorMode==='add-row-down'?'active':''}" onclick="setEditorMode('add-row-down')">+ Wiersz dol</button>
+    <button class="btn btn-danger ${editorMode==='delete-col'?'active':''}" onclick="setEditorMode('delete-col')">Usun kolumne</button>
+    <button class="btn btn-danger ${editorMode==='delete-row'?'active':''}" onclick="setEditorMode('delete-row')">Usun wiersz</button>
+    <button class="btn btn-secondary ${editorMode==='select'?'active':''}" onclick="setEditorMode('select')">Wylacz tryb</button>`;
     html += "<table>";
     editorBuffer.forEach((row,r)=>{
         html += "<tr>";
@@ -1888,12 +1900,31 @@ function getOriginalCellKey(td){
     return `${r}-${c}`;
 }
 
+function setActiveBtn(id, active){
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.classList.toggle("active", !!active);
+}
+
+function refreshModeIndicators(){
+    setActiveBtn("modeRandomBtn", mode === "random");
+    setActiveBtn("modeFixedBtn", mode === "fixed");
+    setActiveBtn("modeManualBtn", mode === "manual");
+    setActiveBtn("modeInfoBtn", mode === "info");
+    setActiveBtn("modeExcludeFixedBtn", mode === "excludeFixed");
+    setActiveBtn("manualSelectBtn", manualSelectMode);
+    setActiveBtn("discoverModeBtn", discoverMode);
+    setActiveBtn("renewModeBtn", renewMode);
+    setActiveBtn("hintModeBtn", hintModeArmed);
+}
+
 setMode = function(m){
     mode = m;
     manualSelectMode = false;
     discoverMode = false;
     renewMode = false;
     hintModeArmed = false;
+    refreshModeIndicators();
     updateCellClickHandlers();
     alert("Wybrano tryb: " + m);
 };
@@ -1904,6 +1935,7 @@ toggleManualSelect = function(){
     discoverMode = false;
     renewMode = false;
     hintModeArmed = false;
+    refreshModeIndicators();
     updateCellClickHandlers();
     alert("Manualny tryb wyboru " + (manualSelectMode ? "włączony" : "wyłączony"));
 };
@@ -2110,6 +2142,7 @@ armHintMode = function(){
     discoverMode = false;
     renewMode = false;
     manualSelectMode = false;
+    refreshModeIndicators();
     updateCellClickHandlers();
     alert("Tryb podpowiedzi aktywny. Kliknij komorke z inputem.");
 };
@@ -2138,6 +2171,7 @@ startQuiz = function(){
     renewMode = false;
     hintModeArmed = false;
     manualSelectMode = false;
+    refreshModeIndicators();
 
     let quizRows = tableData.map((row, idx)=>({ row, origR: idx }));
     const isFullInfoRow = (row, origR) => {
@@ -2241,6 +2275,7 @@ updateCellClickHandlers = function(){
         if(hintModeArmed && td.querySelector("input")){
             td.onclick = ()=>{
                 hintModeArmed = false;
+                refreshModeIndicators();
                 openHintOverlay(td, td.dataset.hintType || "1");
                 updateCellClickHandlers();
             };
@@ -2379,6 +2414,8 @@ calculateStats = function(){
             <p>Komorki z najwieksza iloscia bledow:<br>${top.length?top.join("<br>"):"Brak bledow"}</p>
             <p>Czas trwania quizu: ${tm}</p>`;
 };
+
+document.addEventListener("DOMContentLoaded", refreshModeIndicators);
 
 </script>
 
