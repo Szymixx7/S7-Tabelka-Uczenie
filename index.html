@@ -1965,9 +1965,25 @@ startQuiz = function(){
     manualSelectMode = false;
 
     let quizRows = tableData.map((row, idx)=>({ row, origR: idx }));
+    const isFullInfoRow = (row, origR) => {
+        const nonEmpty = row
+            .map((cell, c)=>({ cell: String(cell ?? "").trim(), c }))
+            .filter(x=>x.cell !== "");
+        if(!nonEmpty.length) return false;
+        return nonEmpty.every(x => (markMap[`${origR}-${x.c}`] || {}).info);
+    };
+
+    const infoTopRows = [];
+    const normalRows = [];
+    quizRows.forEach(r=>{
+        if(isFullInfoRow(r.row, r.origR)) infoTopRows.push(r);
+        else normalRows.push(r);
+    });
+
     if(document.getElementById("shuffleRows").checked){
-        quizRows.sort(()=>0.5 - Math.random());
+        normalRows.sort(()=>0.5 - Math.random());
     }
+    quizRows = infoTopRows.concat(normalRows);
 
     let html = "<table>";
     quizRows.forEach((rowObj,rView)=>{
