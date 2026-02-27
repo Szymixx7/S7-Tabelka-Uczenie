@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>Trening SĹ‚Ăłwek z Tabelki by Szymix7đź‘‘ v6</title>
+<title>Trening Słówek z Tabelki by Szymix7👑 v6</title>
 <style>
 body { font-family: Arial,sans-serif; margin:20px; background:#f4f4f9; }
 textarea { width:100%; height:150px; }
@@ -53,16 +53,16 @@ td.hasHintBadge { position: relative; padding-right: 20px; }
 </head>
 <body>
 
-<h2>Trening SĹ‚Ăłwek z Tabelki by Szymix7đź‘‘ v6</h2>
+<h2>Trening Słówek z Tabelki by Szymix7👑 v6</h2>
 
-<textarea id="inputArea" placeholder="Wklej tabelkÄ™ z Worda..."></textarea><br>
+<textarea id="inputArea" placeholder="Wklej tabelkę z Worda..."></textarea><br>
 <button class="btn btn-main" onclick="convertTable()">Konwertuj</button>
-<button class="btn btn-secondary" onclick="clearAll()">WyczyĹ›Ä‡</button>
-<button class="btn btn-secondary" onclick="exportTable()">Eksportuj tabelÄ™</button>
+<button class="btn btn-secondary" onclick="clearAll()">Wyczyść</button>
+<button class="btn btn-secondary" onclick="exportTable()">Eksportuj tabelę</button>
 <input type="file" id="importFile" style="display:inline-block;" onchange="importTable(this.files[0])">
 <button class="btn btn-secondary" onclick="openDbFilePicker()">Wybierz plik z bazy</button>
-<button class="btn btn-secondary" onclick="createTable()">StwĂłrz tabelÄ™</button>
-<button class="btn btn-secondary" onclick="editTable()">Edytuj tabelÄ™</button>
+<button class="btn btn-secondary" onclick="createTable()">Stwórz tabelę</button>
+<button class="btn btn-secondary" onclick="editTable()">Edytuj tabelę</button>
 
 <label style="display:inline-flex; align-items:center; margin-left:10px; cursor:pointer;">
   <input type="checkbox" id="autoEnter" style="margin:0 5px 0 0;"> Automatyczny Enter
@@ -73,7 +73,7 @@ td.hasHintBadge { position: relative; padding-right: 20px; }
 </label>
 
 <label style="display:inline-flex; align-items:center; margin-right:15px;">
-  <input type="checkbox" id="shuffleRows" style="margin:0 8px 0 0;" checked> Tasuj wiersze (tylko w teĹ›cie)
+  <input type="checkbox" id="shuffleRows" style="margin:0 8px 0 0;" checked> Tasuj wiersze (tylko w teście)
 </label>
 
 <label style="display:inline-flex; align-items:center; margin-left:10px; cursor:pointer;">
@@ -83,15 +83,15 @@ td.hasHintBadge { position: relative; padding-right: 20px; }
 <div id="controls" style="display:none;">
 <p>Opcje:</p>
 <button class="btn btn-secondary" onclick="setMode('random')">Losowe</button>
-<button class="btn btn-secondary" onclick="setMode('fixed')">Losowe wartoĹ›ciowe</button>
-<input type="number" id="fixedCount" value="-1" style="width:60px; display:inline-block; margin-left:10px;" title="Ile komĂłrek na linijkÄ™ zakryÄ‡"><br><br>
+<button class="btn btn-secondary" onclick="setMode('fixed')">Losowe wartościowe</button>
+<input type="number" id="fixedCount" value="-1" style="width:60px; display:inline-block; margin-left:10px;" title="Ile komórek na linijkę zakryć"><br><br>
 <button class="btn btn-secondary" onclick="setMode('manual')">Manualne</button>
 <button class="btn btn-secondary" onclick="setMode('info')">Zaznaczanie informacyjne</button>
-<button class="btn btn-secondary" onclick="setMode('excludeFixed')">Ignoruj w losowe wartoĹ›ciowe</button>
+<button class="btn btn-secondary" onclick="setMode('excludeFixed')">Ignoruj w losowe wartościowe</button>
 <button class="btn btn-secondary" onclick="toggleManualSelect()">Manualny tryb wyboru</button><br><br>
 
-Globalna liczba prĂłb: <input type="number" id="maxTries" value="-1" style="width:60px;"> (-1 = brak limitu)<br>
-IloĹ›Ä‡ prĂłb na komĂłrkÄ™: <input type="number" id="cellTries" value="-1" style="width:60px;"> (-1 = brak limitu)<br>
+Globalna liczba prób: <input type="number" id="maxTries" value="-1" style="width:60px;"> (-1 = brak limitu)<br>
+Ilość prób na komórkę: <input type="number" id="cellTries" value="-1" style="width:60px;"> (-1 = brak limitu)<br>
 Limit czasu (sekundy): <input type="number" id="timeLimit" value="-1" style="width:80px;"> (-1 lub 0 = brak limitu)<br><br>
 
 <button class="btn btn-main" onclick="startQuiz()">Start</button>
@@ -99,16 +99,16 @@ Limit czasu (sekundy): <input type="number" id="timeLimit" value="-1" style="wid
 
 <div id="tableContainer"></div>
 
-<!-- pole tekstowe z pytaniami â€” edytowalne w menu gĹ‚Ăłwnym, w quizie pokazujemy tylko display -->
-<textarea id="extraText" placeholder="Tu wpisz pytania/opisy (np. jak krzyĹĽĂłwka). Edytowalne tylko w menu gĹ‚Ăłwnym."></textarea>
+<!-- pole tekstowe z pytaniami — edytowalne w menu głównym, w quizie pokazujemy tylko display -->
+<textarea id="extraText" placeholder="Tu wpisz pytania/opisy (np. jak krzyżówka). Edytowalne tylko w menu głównym."></textarea>
 <div id="extraTextDisplay" style="display:none"></div>
 
 <div id="quizControls" style="display:none; margin-top:15px;">
 <button class="btn btn-secondary" onclick="enterDiscoverMode()">Odkryj wybrane</button>
-<button class="btn btn-secondary" onclick="enterRenewMode()">OdnĂłw wybrane</button>
-<button class="btn btn-secondary" onclick="armHintMode()">PodpowiedĹş (1 klik)</button>
-<button class="btn btn-secondary" onclick="showAll()">PokaĹĽ wszystko</button>
-<button id="backBtn" class="btn btn-secondary" onclick="backToMenu()" style="display:inline-block;">WrĂłÄ‡</button>
+<button class="btn btn-secondary" onclick="enterRenewMode()">Odnów wybrane</button>
+<button class="btn btn-secondary" onclick="armHintMode()">Podpowiedź (1 klik)</button>
+<button class="btn btn-secondary" onclick="showAll()">Pokaż wszystko</button>
+<button id="backBtn" class="btn btn-secondary" onclick="backToMenu()" style="display:inline-block;">Wróć</button>
 </div>
 
 <script>
@@ -134,19 +134,19 @@ let dragState = { active: false, startX:0, startY:0, initLeft:0, initTop:0 };
 function normalize(str){
     return (str||"")
         .toLowerCase()
-        .replace(/Ă¤/g,'a')
-        .replace(/Ă¶/g,'o')
-        .replace(/ĂĽ/g,'u')
-        .replace(/Ăź/g,'b')
-        .replace(/Ä…/g,'a')
-        .replace(/Ä™/g,'e')
-        .replace(/Ä‡/g,'c')
-        .replace(/Ĺ‚/g,'l')
-        .replace(/Ĺ„/g,'n')
-        .replace(/Ăł/g,'o')
-        .replace(/Ĺ›/g,'s')
-        .replace(/ĹĽ/g,'z')
-        .replace(/Ĺş/g,'z')
+        .replace(/ä/g,'a')
+        .replace(/ö/g,'o')
+        .replace(/ü/g,'u')
+        .replace(/ß/g,'b')
+        .replace(/ą/g,'a')
+        .replace(/ę/g,'e')
+        .replace(/ć/g,'c')
+        .replace(/ł/g,'l')
+        .replace(/ń/g,'n')
+        .replace(/ó/g,'o')
+        .replace(/ś/g,'s')
+        .replace(/ż/g,'z')
+        .replace(/ź/g,'z')
         .trim();
 }
 
@@ -177,7 +177,7 @@ function convertTable(){
     document.getElementById("extraText").style.display = "block";
     document.getElementById("extraTextDisplay").style.display = "none";
 
-    // tableData musi pozostaÄ‡ zwykĹ‚Ä… tablicÄ… 2D (bez obiektĂłw), bo reszta kodu uĹĽywa row.forEach
+    // tableData musi pozostać zwykłą tablicą 2D (bez obiektów), bo reszta kodu używa row.forEach
 }
 
 function renderTable(selectable=false){
@@ -203,7 +203,7 @@ function setMode(m){ mode=m; alert("Wybrano tryb: "+m); }
 
 function toggleManualSelect(){
     manualSelectMode = !manualSelectMode;
-    alert("Manualny tryb wyboru " + (manualSelectMode ? "wĹ‚Ä…czony" : "wyĹ‚Ä…czony"));
+    alert("Manualny tryb wyboru " + (manualSelectMode ? "włączony" : "wyłączony"));
     updateCellClickHandlers();
 }
 
@@ -211,26 +211,26 @@ let quizStartTime = 0;
 
 function startQuiz(){
     quizStartTime = Date.now();
-    // --- OSTRZEĹ»ENIE O BRAKU ZAĹADOWANEJ TABELI (tylko jeĹ›li brak pliku) ---
+    // --- OSTRZEŻENIE O BRAKU ZAŁADOWANEJ TABELI (tylko jeśli brak pliku) ---
     const fileInput = document.getElementById("importFile");
     if (!fileInput.files.length) {
         alert(
-            "Nie masz zaĹ‚adowanej tabeli!\n\n" +
-            "Aby rozpoczÄ…Ä‡ quiz, musisz:\n" +
-            "1ď¸ŹâŁ WyeksportowaÄ‡ tabelÄ™,\n" +
-            "2ď¸ŹâŁ ZaĹ‚adowaÄ‡ plik tabeli (.json) za pomocÄ… przycisku 'Wybierz plik'.\n\n" +
-            "Po wykonaniu tych krokĂłw kliknij ponownie 'Start'."
+            "Nie masz załadowanej tabeli!\n\n" +
+            "Aby rozpocząć quiz, musisz:\n" +
+            "1️⃣ Wyeksportować tabelę,\n" +
+            "2️⃣ Załadować plik tabeli (.json) za pomocą przycisku 'Wybierz plik'.\n\n" +
+            "Po wykonaniu tych kroków kliknij ponownie 'Start'."
         );
         return; // zatrzymuje uruchamianie quizu
     }
 
     savedConfig.manualSelectMode = manualSelectMode; // <-- dodaj
-    mode = mode === "info" ? null : mode; // wyĹ‚Ä…cza tryb info po starcie
-    manualSelectMode = false; // teĹĽ wyĹ‚Ä…cz manualny tryb wyboru
+    mode = mode === "info" ? null : mode; // wyłącza tryb info po starcie
+    manualSelectMode = false; // też wyłącz manualny tryb wyboru
     manualSelectMode = false;
     if(!mode){ alert("Wybierz tryb!"); return; }
 
-    // save original state (do przywrĂłcenia)
+    // save original state (do przywrócenia)
     savedConfig = {
         mode: mode,
         fixedCount: parseInt(document.getElementById("fixedCount").value)||2,
@@ -257,7 +257,7 @@ function startQuiz(){
         let fixed=[];
         if(mode==="random") fixed = indices.filter(i=>{
             // origTd based on original rendered table positions might not match after shuffle,
-            // but we only want to check if original had info/fixed â€” simpler: check original tableState
+            // but we only want to check if original had info/fixed — simpler: check original tableState
             // find corresponding original row index for this row's content (approximate)
             return true; // we'll not rely on origTd for info in shuffled quiz; info/fixed from original tableState should be preserved via class checks later if needed.
         }).sort(()=>0.5-Math.random()).slice(0,Math.floor(Math.random()*3)+1);
@@ -267,8 +267,8 @@ function startQuiz(){
             let tdClass="", content="";
             // try find original cell state (info/fixed) by matching value in original tableState
             let origStateClass = ""; // default
-            // search in original tableState for same cell value in same row length to guess class â€” but to keep simple we respect only 'info'/'fixed' if they were set in original rendered DOM before startQuiz.
-            // Instead, check savedConfig.tableState for existence of same cell in same row index; if shuffle we don't worry â€” user expects info marking preserved on visible table maybe not necessary
+            // search in original tableState for same cell value in same row length to guess class — but to keep simple we respect only 'info'/'fixed' if they were set in original rendered DOM before startQuiz.
+            // Instead, check savedConfig.tableState for existence of same cell in same row index; if shuffle we don't worry — user expects info marking preserved on visible table maybe not necessary
             // We'll preserve per-cell 'info' or 'fixed' by checking the currently rendered DOM cells before startQuiz (the original table view still exists in DOM).
             let origTd = document.querySelector(`#tableContainer td[data-answer="${cell}"]`);
             if(origTd && origTd.classList.contains("info")) { tdClass="info"; content = cell; }
@@ -288,13 +288,13 @@ function startQuiz(){
     html += "</table>";
     document.getElementById("tableContainer").innerHTML = html;
 
-    // blokada pustych komĂłrek w quizie
+    // blokada pustych komórek w quizie
     document.querySelectorAll("#tableContainer td").forEach(td => {
         if(!td.dataset.answer || td.dataset.answer.trim() === ""){
             td.style.background = "black";
             td.style.color = "white";
             td.innerHTML = ""; // usuwa input
-            td.onclick = null;  // blokada klikniÄ™Ä‡
+            td.onclick = null;  // blokada kliknięć
         }
     });
 
@@ -340,12 +340,12 @@ function startTimer(seconds){
         updateTimerOverlay();
         if(timerRemaining <= 0){
     	    stopTimer();
-    	    alert("Czas minÄ…Ĺ‚! Odpowiedzi zostanÄ… odkryte.");
-    	    showAll(); // zamiast ustawiaÄ‡ wszystkim na wrong
-	    // --- wywoĹ‚anie statystyk, jeĹ›li checkbox Statystyki jest wĹ‚Ä…czony ---
+    	    alert("Czas minął! Odpowiedzi zostaną odkryte.");
+    	    showAll(); // zamiast ustawiać wszystkim na wrong
+	    // --- wywołanie statystyk, jeśli checkbox Statystyki jest włączony ---
 	    if (document.getElementById("showStatsCheckbox")?.checked) {
-    	        const statsHtml = calculateStats(); // funkcja generujÄ…ca treĹ›Ä‡ statystyk
-	    	showStatsOverlay(statsHtml); // pokazuje nakĹ‚adkÄ™
+    	        const statsHtml = calculateStats(); // funkcja generująca treść statystyk
+	    	showStatsOverlay(statsHtml); // pokazuje nakładkę
 	    }
 	}
     }, 1000);
@@ -366,7 +366,7 @@ function createTimerOverlay(){
     timerOverlay.className = 'timerOverlay locked';
     timerOverlay.style.right = '20px';
     timerOverlay.style.top = '80px';
-    timerOverlay.innerHTML = `<span id="timerText"></span><button class="lockBtn" id="timerLockBtn">đź”’</button>`;
+    timerOverlay.innerHTML = `<span id="timerText"></span><button class="lockBtn" id="timerLockBtn">🔒</button>`;
     document.body.appendChild(timerOverlay);
 
     timerLocked = true;
@@ -376,7 +376,7 @@ function createTimerOverlay(){
         timerLocked = !timerLocked;
         if(timerLocked){
             timerOverlay.classList.add('locked');
-            document.getElementById('timerLockBtn').textContent = 'đź”’';
+            document.getElementById('timerLockBtn').textContent = '🔒';
             // snap to fixed: convert current absolute position to fixed anchored position by setting right/top
             const rect = timerOverlay.getBoundingClientRect();
             const right = window.innerWidth - rect.right;
@@ -385,7 +385,7 @@ function createTimerOverlay(){
             timerOverlay.style.position = 'fixed';
         } else {
             timerOverlay.classList.remove('locked');
-            document.getElementById('timerLockBtn').textContent = 'đź”“';
+            document.getElementById('timerLockBtn').textContent = '🔓';
             // switch to absolute to allow dragging within the document
             const rect = timerOverlay.getBoundingClientRect();
             timerOverlay.style.position = 'absolute';
@@ -448,7 +448,7 @@ function checkInput(e,input){
             return; // nic nie liczymy dalej
         }
 
-        // jeĹ›li odpowiedĹş bĹ‚Ä™dna:
+        // jeśli odpowiedź błędna:
         let tries = parseInt(input.dataset.tries)||0;
         let maxCell = parseInt(input.dataset.maxtries)||-1;
         let maxGlobal = savedConfig.maxGlobal;
@@ -460,7 +460,7 @@ function checkInput(e,input){
         setTimeout(()=>{
             input.classList.remove("wrong");
             if(document.getElementById("autoClear").checked){
-                input.value=""; // kasuje tylko jeĹ›li opcja wĹ‚Ä…czona
+                input.value=""; // kasuje tylko jeśli opcja włączona
             }
         },1500);
 
@@ -471,12 +471,12 @@ function checkInput(e,input){
 
         if(maxGlobal !== -1 && globalTries>=maxGlobal && !maxGlobalExceeded){
             maxGlobalExceeded = true;
-            alert("PopeĹ‚niĹ‚eĹ› za duĹĽo bĹ‚Ä™dĂłw globalnie! Test koĹ„czy siÄ™.");
+            alert("Popełniłeś za dużo błędów globalnie! Test kończy się.");
             showAll();
-	    // --- wywoĹ‚anie statystyk, jeĹ›li checkbox Statystyki jest wĹ‚Ä…czony ---
+	    // --- wywołanie statystyk, jeśli checkbox Statystyki jest włączony ---
 	    if (document.getElementById("showStatsCheckbox")?.checked) {
-    	        const statsHtml = calculateStats(); // funkcja generujÄ…ca treĹ›Ä‡ statystyk
-    		showStatsOverlay(statsHtml); // pokazuje nakĹ‚adkÄ™
+    	        const statsHtml = calculateStats(); // funkcja generująca treść statystyk
+    		showStatsOverlay(statsHtml); // pokazuje nakładkę
 	    }
         }
     }
@@ -485,7 +485,7 @@ function checkInput(e,input){
 // --- TRYB ODKRYJ WYBRANE ---
 function enterDiscoverMode(){
     if(maxGlobalExceeded){
-        alert("Nie moĹĽesz odkrywaÄ‡ pojedynczych komĂłrek po przekroczeniu limitu globalnego.");
+        alert("Nie możesz odkrywać pojedynczych komórek po przekroczeniu limitu globalnego.");
         return;
     }
     discoverMode = true;
@@ -512,15 +512,15 @@ function enterDiscoverMode(){
     }
 }
 
-// --- TRYB ODNĂ“W WYBRANE ---
+// --- TRYB ODNÓW WYBRANE ---
 function enterRenewMode(){
     renewMode = !renewMode;
     discoverMode = false;
     updateCellClickHandlers();
-    alert("Tryb odnĂłw " + (renewMode ? "wĹ‚Ä…czony" : "wyĹ‚Ä…czony"));
+    alert("Tryb odnów " + (renewMode ? "włączony" : "wyłączony"));
 }
 
-// --- AKTUALIZACJA KLIKĂ“W NA KOMĂ“RKACH ---
+// --- AKTUALIZACJA KLIKÓW NA KOMÓRKACH ---
 function updateCellClickHandlers(){
     document.querySelectorAll("#tableContainer td").forEach(td=>{
         td.onclick = null;
@@ -571,7 +571,7 @@ function backToMenu(){
 
     const shuffle = document.getElementById("shuffleRows").checked;
 
-    // Zapis aktualnego stanu info/fixed przed przywrĂłceniem
+    // Zapis aktualnego stanu info/fixed przed przywróceniem
     let tds = document.querySelectorAll("#tableContainer td");
     savedConfig.cellStates = Array.from(tds).map(td=>{
     	let cls = "";
@@ -585,7 +585,7 @@ function backToMenu(){
     });
 
 
-    // PrzywrĂłcenie tableData do oryginaĹ‚u
+    // Przywrócenie tableData do oryginału
     tableData = JSON.parse(JSON.stringify(savedConfig.tableState));
     renderTable(true); // od razu buduje TD
 
@@ -604,7 +604,7 @@ function backToMenu(){
             }
     	});
 } else {
-    // Przywracanie po wartoĹ›ci (shuffle ON)
+    // Przywracanie po wartości (shuffle ON)
     newTds.forEach(td=>{
         const answer = td.dataset.answer;
         const state = savedConfig.cellStates.find(s => 
@@ -621,17 +621,17 @@ function backToMenu(){
     });
 }
 
-    // PrzywrĂłcenie manualSelectMode tylko jeĹ›li tryb to "manual"
+    // Przywrócenie manualSelectMode tylko jeśli tryb to "manual"
     if (savedConfig.mode === "manual") {
     	manualSelectMode = savedConfig.manualSelectMode || false;
     } else {
     	manualSelectMode = false;
     }
 
-    // Aktualizacja klikĂłw
+    // Aktualizacja klików
     updateCellClickHandlers();
 
-    // PrzywrĂłcenie extraText
+    // Przywrócenie extraText
     document.getElementById("extraText").value = savedConfig.extraText || "";
     document.getElementById("extraText").style.display = "block";
     document.getElementById("extraTextDisplay").style.display = "none";
@@ -640,7 +640,7 @@ function backToMenu(){
     document.getElementById("controls").style.display="block";
     document.getElementById("quizControls").style.display="none";
 
-    // PrzywrĂłcenie ustawieĹ„ quizu
+    // Przywrócenie ustawień quizu
     mode = savedConfig.mode;
     document.getElementById("fixedCount").value = savedConfig.fixedCount;
     document.getElementById("maxTries").value = savedConfig.maxGlobal;
@@ -648,10 +648,10 @@ function backToMenu(){
     discoverMode = false;
     renewMode = false;
 
-    // --- wywoĹ‚anie statystyk, jeĹ›li checkbox Statystyki jest wĹ‚Ä…czony ---
+    // --- wywołanie statystyk, jeśli checkbox Statystyki jest włączony ---
     if (document.getElementById("showStatsCheckbox")?.checked) {
-        const statsHtml = calculateStats(); // funkcja generujÄ…ca treĹ›Ä‡ statystyk
-        showStatsOverlay(statsHtml); // pokazuje nakĹ‚adkÄ™
+        const statsHtml = calculateStats(); // funkcja generująca treść statystyk
+        showStatsOverlay(statsHtml); // pokazuje nakładkę
     }
 }
 
@@ -674,7 +674,7 @@ function clearAll(){
     discoverMode = false;
     renewMode = false;
 
-    // reset input file (ĹĽeby nie pokazywaĹ‚o starego pliku)
+    // reset input file (żeby nie pokazywało starego pliku)
     const importFile = document.getElementById("importFile");
     if(importFile) importFile.value = "";
 
@@ -709,7 +709,7 @@ function importTable(file){
     const reader = new FileReader();
     reader.onload = function(e){
         const data = JSON.parse(e.target.result);
-        let cellsData = data.table || data; // jeĹ›li starszy format
+        let cellsData = data.table || data; // jeśli starszy format
         tableData = [];
         const rows = {};
         cellsData.forEach(cell=>{
@@ -731,8 +731,8 @@ function importTable(file){
 }
 
 function createTable(){
-    let rows = prompt("Podaj liczbÄ™ wierszy:");
-    let cols = prompt("Podaj liczbÄ™ kolumn:");
+    let rows = prompt("Podaj liczbę wierszy:");
+    let cols = prompt("Podaj liczbę kolumn:");
     if(!rows || !cols) return;
 
     let html="<table>";
@@ -745,7 +745,7 @@ function createTable(){
     }
     html+="</table>";
     html+=`
-        <button class="btn btn-main" onclick="saveEditedTable()">Zapisz tabelkÄ™</button>
+        <button class="btn btn-main" onclick="saveEditedTable()">Zapisz tabelkę</button>
         <button class="btn btn-secondary" onclick="copyTableCode()">Kopiuj kod tabelki</button>
         <button class="btn btn-danger" onclick="closeEditor()">Zamknij</button>
     `;
@@ -757,7 +757,7 @@ function createTable(){
 
 function editTable(){
     if(tableData.length===0){
-        alert("Najpierw wczytaj tabelÄ™.");
+        alert("Najpierw wczytaj tabelę.");
         return;
     }
     let html="<table>";
@@ -770,7 +770,7 @@ function editTable(){
     });
     html+="</table>";
     html+=`
-        <button class="btn btn-main" onclick="saveEditedTable()">Zapisz tabelkÄ™</button>
+        <button class="btn btn-main" onclick="saveEditedTable()">Zapisz tabelkę</button>
         <button class="btn btn-secondary" onclick="copyTableCode()">Kopiuj kod tabelki</button>
         <button class="btn btn-danger" onclick="closeEditor()">Zamknij</button>
     `;
@@ -792,7 +792,7 @@ function saveEditedTable(){
     });
     tableData=newData;
     renderTable(true);
-    // czarne dla pustych (w menu teĹĽ mogÄ… byÄ‡ czarne)
+    // czarne dla pustych (w menu też mogą być czarne)
     document.querySelectorAll("#tableContainer td").forEach(td=>{
         if(!td.dataset.answer || td.dataset.answer.trim()===""){
             td.style.background="black";
@@ -809,7 +809,7 @@ function saveEditedTable(){
 function copyTableCode(){
     let code = tableData.map(row=>row.join("\t")).join("\n");
     navigator.clipboard.writeText(code).then(()=>{
-        alert("Skopiowano tabelkÄ™ do schowka!");
+        alert("Skopiowano tabelkę do schowka!");
     });
 }
 
@@ -824,14 +824,14 @@ function closeEditor(){
 function prepareQuizData() {
     let quizData = JSON.parse(JSON.stringify(tableData));
 
-    // infoRows zawsze na gĂłrze
+    // infoRows zawsze na górze
     let infoRows = quizData.filter(r => r.hasInfo);
     let normalRows = quizData.filter(r => !r.hasInfo);
 
-    // zachowanie oryginalnej kolejnoĹ›ci infoRows
+    // zachowanie oryginalnej kolejności infoRows
     infoRows.sort((a,b) => a.originalIndex - b.originalIndex);
 
-    // jeĹ›li shuffle wĹ‚Ä…czone, tasujemy normalRows
+    // jeśli shuffle włączone, tasujemy normalRows
     if(document.getElementById("shuffleRows").checked && mode !== "manual") {
         normalRows.sort(() => 0.5 - Math.random());
     }
@@ -848,7 +848,7 @@ function maybeShowStats() {
 }
 
 function showStats(statsHtml){
-    // jeĹ›li nakĹ‚adka juĹĽ istnieje, usuĹ„
+    // jeśli nakładka już istnieje, usuń
     const existing = document.getElementById("statsOverlay");
     if(existing) existing.remove();
 
@@ -901,7 +901,7 @@ function calculateStats(){
     let currentWrongStreak = 0;
     let usedDiscover = 0;
 
-    let cellErrorMap = {}; // klucz: "r-c", wartoĹ›Ä‡: liczba bĹ‚Ä™dĂłw
+    let cellErrorMap = {}; // klucz: "r-c", wartość: liczba błędów
 
     document.querySelectorAll("#tableContainer td").forEach(td=>{
         let answer = td.dataset.answer || td.textContent;
@@ -909,18 +909,18 @@ function calculateStats(){
 
         totalCells++;
 
-        // sprawdzamy, czy uĹĽytkownik podaĹ‚ wartoĹ›Ä‡
+        // sprawdzamy, czy użytkownik podał wartość
         let userVal = td.dataset.uservalue || normalize(td.textContent);
         let correct = (normalize(answer) === userVal);
 
         // poprawne
         if(correct) correctCells++;
 
-        // pierwsza prĂłba
+        // pierwsza próba
         let tries = parseInt(td.dataset.tries || "0");
         if(correct && tries === 0) firstTryCorrect++;
 
-        // bĹ‚Ä™dy globalne
+        // błędy globalne
         globalErrors += tries;
         if(tries>0){
             cellErrorMap[`R${td.dataset.r}-C${td.dataset.c}`] = tries;
@@ -941,27 +941,27 @@ function calculateStats(){
         if(td.dataset.discovered === "1" || td.classList.contains("discovered")) usedDiscover++;
     });
 
-    // Top komĂłrki z bĹ‚Ä™dami
+    // Top komórki z błędami
     let topCells = Object.entries(cellErrorMap)
         .sort((a,b)=>b[1]-a[1])
         .slice(0,3)
-        .map((e,i)=>`${i+1}. ${e[0]} - ${e[1]} bĹ‚Ä…d(Ăłw)`);
+        .map((e,i)=>`${i+1}. ${e[0]} - ${e[1]} błąd(ów)`);
 
     // procenty
     let percentGuessed = totalCells ? Math.round(correctCells/totalCells*100) : 0;
     let percentFirstTry = totalCells ? Math.round(firstTryCorrect/totalCells*100) : 0;
 
-    // czas â€“ jeĹ›li masz zmiennÄ… timerRemaining lub licznik startowy moĹĽesz tu dodaÄ‡ np. czas trwania quizu
+    // czas – jeśli masz zmienną timerRemaining lub licznik startowy możesz tu dodać np. czas trwania quizu
     let timeUsed = "Niezaimplementowane"; // placeholder
 
     let statsHtml = `
         <p>Poprawnych odpowiedzi: ${correctCells}/${totalCells} (${percentGuessed}%)</p>
         <p>Poprawnych odpowiedzi za pierwszym razem: ${percentFirstTry}%</p>
-        <p>NajwiÄ™ksza passa poprawnych odpowiedzi: ${maxCorrectStreak}</p>
-        <p>NajwiÄ™ksza passa bĹ‚Ä™dnych odpowiedzi: ${maxWrongStreak}</p>
-        <p>BĹ‚Ä™dy globalne: ${globalErrors}</p>
-        <p>IloĹ›Ä‡ uĹĽyÄ‡ odkryj wybranych: ${usedDiscover}</p>
-        <p>KomĂłrki z najwiÄ™kszÄ… iloĹ›ciÄ… bĹ‚Ä™dĂłw:<br>${topCells.length ? topCells.join("<br>") : "Brak bĹ‚Ä™dĂłw"}</p>
+        <p>Największa passa poprawnych odpowiedzi: ${maxCorrectStreak}</p>
+        <p>Największa passa błędnych odpowiedzi: ${maxWrongStreak}</p>
+        <p>Błędy globalne: ${globalErrors}</p>
+        <p>Ilość użyć odkryj wybranych: ${usedDiscover}</p>
+        <p>Komórki z największą ilością błędów:<br>${topCells.length ? topCells.join("<br>") : "Brak błędów"}</p>
         <p>Czas trwania quizu: ${timeUsed}</p>
     `;
     return statsHtml;
@@ -1095,7 +1095,7 @@ checkInput = function(e,input){
         td.dataset.correct = "1";
         td.dataset.firsttry = tries===0 ? "1" : "0";
         td.classList.add("correct");
-        td.textContent = input.dataset.answer; // pokaz peĹ‚nÄ… wartoĹ›Ä‡, np. "ĹĽyÄ‡, mieszkaÄ‡"
+        td.textContent = input.dataset.answer; // pokaz pełną wartość, np. "żyć, mieszkać"
         return;
     }
 
@@ -1469,27 +1469,14 @@ async function openDbFilePicker(){
     await showDbOverlay();
 }
 
-async function fetchBaseListing(){
-    const candidates = ["./bazatabelek/", "bazatabelek/", "/bazatabelek/"];
-    for(const candidate of candidates){
-        try{
-            const res = await fetch(candidate, { cache: "no-store" });
-            const txt = await res.text();
-            dbLastListingPreview = String(txt || "").slice(0, 600);
-            // NiektĂłre serwery zwracajÄ… listing nawet przy statusie != 2xx
-            if(txt && (txt.includes("href=") || txt.includes("<a") || txt.length > 50)){
-                return { basePath: candidate, html: txt };
-            }
-        } catch(_){}
-    }
-    return null;
+function looksLikeDirectoryListing(html){
+    const t = String(html || "").toLowerCase();
+    if(!t) return false;
+    return /index of/i.test(t) || /<a\b/i.test(t) || /tabelka\.json/i.test(t);
 }
 
 async function fetchFoldersFromManifest(basePath){
-    const candidates = [
-        `${basePath}folders.json`,
-        `${basePath}index.json`
-    ];
+    const candidates = [`${basePath}folders.json`, `${basePath}index.json`];
     for(const url of candidates){
         try{
             const res = await fetch(url, { cache: "no-store" });
@@ -1504,6 +1491,33 @@ async function fetchFoldersFromManifest(basePath){
         } catch(_){}
     }
     return [];
+}
+
+async function discoverDbFolders(){
+    const candidates = ["./bazatabelek/", "bazatabelek/", "/bazatabelek/"];
+    for(const candidate of candidates){
+        let txt = "";
+        try{
+            const res = await fetch(candidate, { cache: "no-store" });
+            txt = await res.text();
+            dbLastListingPreview = String(txt || "").slice(0, 1200);
+        } catch(_){}
+
+        if(looksLikeDirectoryListing(txt)){
+            dbResolvedBasePath = candidate;
+            const fromHtml = getDirectoryLinksFromHtml(txt);
+            if(fromHtml.length){
+                return { basePath: candidate, folders: fromHtml };
+            }
+        }
+
+        const fromManifest = await fetchFoldersFromManifest(candidate);
+        if(fromManifest.length){
+            dbResolvedBasePath = candidate;
+            return { basePath: candidate, folders: fromManifest };
+        }
+    }
+    return null;
 }
 
 function getDirectoryLinksFromHtml(html){
@@ -1611,27 +1625,17 @@ async function showDbOverlay(){
     document.body.appendChild(overlay);
 
     const list = document.getElementById("dbList");
-    const listing = await fetchBaseListing();
-    if(!listing){
-        list.innerHTML = `Nie mozna odczytac folderu <b>bazatabelek/</b>.<br>
-        Sprawdzone sciezki: <code>./bazatabelek/</code>, <code>bazatabelek/</code>, <code>/bazatabelek/</code>.<br>
-        Upewnij sie, ze serwer pozwala zwrocic listing katalogu.`;
-        return;
-    }
-    dbResolvedBasePath = listing.basePath;
-    const baseHtml = listing.html;
-
-    let folders = getDirectoryLinksFromHtml(baseHtml);
-    if(!folders.length){
-        folders = await fetchFoldersFromManifest(dbResolvedBasePath);
-    }
-    if(!folders.length){
+    const discovered = await discoverDbFolders();
+    if(!discovered){
         list.innerHTML = `Brak folderow tabelek w bazatabelek.<br>
-        Jesli serwer blokuje listing, dodaj <code>${dbResolvedBasePath}folders.json</code> z lista folderow, np.:<br>
+        Sprawdzone sciezki: <code>./bazatabelek/</code>, <code>bazatabelek/</code>, <code>/bazatabelek/</code>.<br>
+        Jesli serwer blokuje listing, dodaj <code>bazatabelek/folders.json</code> z lista folderow, np.:<br>
         <pre>["Niemiecki Kartkowka Dzial I - t. 1-3"]</pre>
         <details><summary>Podglad odpowiedzi serwera (debug)</summary><pre>${(dbLastListingPreview || "").replace(/</g,"&lt;")}</pre></details>`;
         return;
     }
+    dbResolvedBasePath = discovered.basePath;
+    const folders = discovered.folders;
 
     const items = [];
     for(const folderName of folders){
@@ -1725,7 +1729,7 @@ toggleManualSelect = function(){
     renewMode = false;
     hintModeArmed = false;
     updateCellClickHandlers();
-    alert("Manualny tryb wyboru " + (manualSelectMode ? "wĹ‚Ä…czony" : "wyĹ‚Ä…czony"));
+    alert("Manualny tryb wyboru " + (manualSelectMode ? "włączony" : "wyłączony"));
 };
 
 createTimerOverlay = function(){
@@ -1735,14 +1739,14 @@ createTimerOverlay = function(){
     timerOverlay.style.position = 'fixed';
     timerOverlay.style.right = '20px';
     timerOverlay.style.top = '80px';
-    timerOverlay.innerHTML = `<span id="timerText"></span><button class="lockBtn" id="timerLockBtn">đź”’</button>`;
+    timerOverlay.innerHTML = `<span id="timerText"></span><button class="lockBtn" id="timerLockBtn">🔒</button>`;
     document.body.appendChild(timerOverlay);
     timerLocked = true;
 
     document.getElementById('timerLockBtn').addEventListener('click', ()=>{
         timerLocked = !timerLocked;
         timerOverlay.classList.toggle('locked', timerLocked);
-        document.getElementById('timerLockBtn').textContent = timerLocked ? 'đź”’' : 'đź”“';
+        document.getElementById('timerLockBtn').textContent = timerLocked ? '🔒' : '🔓';
     });
 
     timerOverlay.addEventListener('mousedown', (e)=>{
@@ -1797,7 +1801,7 @@ function ensureHintBadge(td){
     if(btn) return;
     btn = document.createElement("button");
     btn.className = "hintBadgeBtn";
-    btn.textContent = "đź’ˇ";
+    btn.textContent = "💡";
     btn.onclick = (ev)=>{
         ev.stopPropagation();
         openHintOverlay(td, td.dataset.hintType || "1");
@@ -2148,5 +2152,3 @@ calculateStats = function(){
 
 </body>
 </html>
-
-
