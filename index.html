@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>Trening Słówek z Tabelki by Szymix7👑 v6.1</title>
+<title>Trening Słówek z Tabelki by Szymix7👑 v6</title>
 <style>
 body { font-family: Arial,sans-serif; margin:20px; background:#f4f4f9; }
 textarea { width:100%; height:150px; }
@@ -53,7 +53,7 @@ td.hasHintBadge { position: relative; padding-right: 20px; }
 </head>
 <body>
 
-<h2>Trening Słówek z Tabelki by Szymix7👑 v6.1</h2>
+<h2>Trening Słówek z Tabelki by Szymix7👑 v6</h2>
 
 <textarea id="inputArea" placeholder="Wklej tabelkę z Worda..."></textarea><br>
 <button class="btn btn-main" onclick="convertTable()">Konwertuj</button>
@@ -1680,17 +1680,18 @@ async function showDbOverlay(){
         const base = `${dbResolvedBasePath}${encodeURIComponent(folderName)}/`;
         const jsonUrl = `${base}${DB_TABLE_JSON}`;
         const infoUrl = `${base}${DB_INFO_JSON}`;
+        const bust = `?t=${Date.now()}`;
 
         let tableDataObj = null;
         try{
-            const resJson = await fetch(jsonUrl);
+            const resJson = await fetch(jsonUrl + bust, { cache: "no-store" });
             if(!resJson.ok) continue;
             tableDataObj = await resJson.json();
         } catch(_){ continue; }
 
         let infoText = "";
         try{
-            const r = await fetch(infoUrl);
+            const r = await fetch(infoUrl + bust, { cache: "no-store" });
             if(r.ok) infoText = await r.text();
         } catch(_){}
         const meta = parseTableInfoText(infoText);
@@ -1723,7 +1724,7 @@ async function loadDbItem(index){
     const item = window.__dbItems?.[index];
     if(!item) return;
     try{
-        const data = item.tableDataObj || (await (await fetch(item.jsonUrl)).json());
+        const data = item.tableDataObj || (await (await fetch(item.jsonUrl + `?t=${Date.now()}`, { cache: "no-store" })).json());
         importTableData(data);
         document.getElementById("dbOverlay")?.remove();
     } catch(_){
@@ -2190,4 +2191,3 @@ calculateStats = function(){
 
 </body>
 </html>
-
