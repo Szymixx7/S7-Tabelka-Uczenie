@@ -256,6 +256,8 @@ Limit czasu (sekundy): <input type="number" id="timeLimit" value="-1" style="wid
 <script>
 let tableData = [];
 let mode = null;
+let quizMode = null;
+let markMode = null;
 let savedConfig = {};
 let globalTries = 0;
 let maxGlobalExceeded = false;
@@ -336,9 +338,9 @@ function renderTable(selectable=false){
 }
 
 function toggleCell(td){
-    if(manualSelectMode || mode==="manual") td.classList.toggle("fixed");
-    else if(mode==="info") td.classList.toggle("info");
-    else if(mode==="excludeFixed") td.classList.toggle("excludeFixed");
+    if(manualSelectMode) td.classList.toggle("fixed");
+    else if(markMode==="info") td.classList.toggle("info");
+    else if(markMode==="excludeFixed") td.classList.toggle("excludeFixed");
 }
 
 function setMode(m){ mode=m; alert("Wybrano tryb: "+m); }
@@ -813,6 +815,8 @@ function clearAll(){
     // reset zmiennych
     tableData = [];
     mode = null;
+    quizMode = null;
+    markMode = null;
     savedConfig = {};
     globalTries = 0;
     maxGlobalExceeded = false;
@@ -1389,6 +1393,8 @@ backToMenu = function(){
 
     manualSelectMode = savedConfig.manualSelectMode || false;
     mode = savedConfig.mode || mode;
+    quizMode = mode;
+    markMode = null;
     discoverMode = false;
     renewMode = false;
     hintModeArmed = false;
@@ -1907,11 +1913,11 @@ function setActiveBtn(id, active){
 }
 
 function refreshModeIndicators(){
-    setActiveBtn("modeRandomBtn", mode === "random");
-    setActiveBtn("modeFixedBtn", mode === "fixed");
-    setActiveBtn("modeManualBtn", mode === "manual");
-    setActiveBtn("modeInfoBtn", mode === "info");
-    setActiveBtn("modeExcludeFixedBtn", mode === "excludeFixed");
+    setActiveBtn("modeRandomBtn", quizMode === "random");
+    setActiveBtn("modeFixedBtn", quizMode === "fixed");
+    setActiveBtn("modeManualBtn", quizMode === "manual");
+    setActiveBtn("modeInfoBtn", markMode === "info");
+    setActiveBtn("modeExcludeFixedBtn", markMode === "excludeFixed");
     setActiveBtn("manualSelectBtn", manualSelectMode);
     setActiveBtn("discoverModeBtn", discoverMode);
     setActiveBtn("renewModeBtn", renewMode);
@@ -1919,7 +1925,12 @@ function refreshModeIndicators(){
 }
 
 setMode = function(m){
-    mode = m;
+    if(m === "random" || m === "fixed" || m === "manual"){
+        mode = m;
+        quizMode = m;
+    } else if(m === "info" || m === "excludeFixed"){
+        markMode = m;
+    }
     manualSelectMode = false;
     discoverMode = false;
     renewMode = false;
@@ -1931,7 +1942,7 @@ setMode = function(m){
 
 toggleManualSelect = function(){
     manualSelectMode = !manualSelectMode;
-    if(manualSelectMode) mode = "manual";
+    if(manualSelectMode) markMode = null;
     discoverMode = false;
     renewMode = false;
     hintModeArmed = false;
@@ -2171,6 +2182,7 @@ startQuiz = function(){
     renewMode = false;
     hintModeArmed = false;
     manualSelectMode = false;
+    markMode = null;
     refreshModeIndicators();
 
     let quizRows = tableData.map((row, idx)=>({ row, origR: idx }));
@@ -2264,11 +2276,11 @@ updateCellClickHandlers = function(){
             td.onclick = ()=> td.classList.toggle("fixed");
             return;
         }
-        if(mode==="info" && document.getElementById("controls").style.display!=="none"){
+        if(markMode==="info" && document.getElementById("controls").style.display!=="none"){
             td.onclick = ()=> td.classList.toggle("info");
             return;
         }
-        if(mode==="excludeFixed" && document.getElementById("controls").style.display!=="none"){
+        if(markMode==="excludeFixed" && document.getElementById("controls").style.display!=="none"){
             td.onclick = ()=> td.classList.toggle("excludeFixed");
             return;
         }
