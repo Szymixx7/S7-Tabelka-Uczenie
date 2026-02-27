@@ -1467,18 +1467,24 @@ async function openDbFilePicker(){
 
 function getDirectoryLinksFromHtml(html){
     const doc = new DOMParser().parseFromString(html, "text/html");
-    const out = [];
+    const out = new Set();
+    const baseUrl = new URL(DB_BASE_PATH, window.location.href);
+    const basePath = baseUrl.pathname.endsWith("/") ? baseUrl.pathname : (baseUrl.pathname + "/");
+
     doc.querySelectorAll("a[href]").forEach(a=>{
         const href = a.getAttribute("href") || "";
         if(!href) return;
-        if(href === "../") return;
-        if(href.startsWith("?")) return;
-        if(href.startsWith("#")) return;
-        if(href.includes("..")) return;
-        if(!href.endsWith("/")) return;
-        out.push(href);
+        let url;
+        try { url = new URL(href, baseUrl.href); } catch(_) { return; }
+        if(url.origin !== window.location.origin) return;
+        if(!url.pathname.startsWith(basePath)) return;
+
+        const rel = decodeURIComponent(url.pathname.slice(basePath.length)).replace(/\/+$/,"");
+        if(!rel) return;
+        if(rel.includes("/")) return; // tylko 1 poziom: bazatabelek/<folder>
+        out.add(rel);
     });
-    return Array.from(new Set(out));
+    return Array.from(out);
 }
 
 async function showDbOverlay(){
@@ -1515,18 +1521,17 @@ async function showDbOverlay(){
     }
 
     const items = [];
-    for(const folderHref of folders){
-        const folderName = folderHref.replace(/\/$/, "");
-        const base = DB_BASE_PATH + folderHref;
-        const jsonUrl = base + DB_TABLE_JSON;
-        const infoUrl = base + DB_INFO_JSON;
+    for(const folderName of folders){
+        const base = `${DB_BASE_PATH}${encodeURIComponent(folderName)}/`;
+        const jsonUrl = `${base}${DB_TABLE_JSON}`;
+        const infoUrl = `${base}${DB_INFO_JSON}`;
 
-        let hasTable = false;
+        let tableDataObj = null;
         try{
-            const head = await fetch(jsonUrl + "?t=" + Date.now(), { method: "HEAD" });
-            hasTable = head.ok;
-        } catch(_){ hasTable = false; }
-        if(!hasTable) continue;
+            const resJson = await fetch(jsonUrl + "?t=" + Date.now());
+            if(!resJson.ok) continue;
+            tableDataObj = await resJson.json();
+        } catch(_){ continue; }
 
         let infoText = "";
         try{
@@ -1534,11 +1539,11 @@ async function showDbOverlay(){
             if(r.ok) infoText = await r.text();
         } catch(_){}
         const meta = parseTableInfoText(infoText);
-        items.push({ folder: folderName, jsonUrl, meta });
+        items.push({ folder: folderName, jsonUrl, tableDataObj, meta });
     }
 
     if(!items.length){
-        list.innerHTML = "Brak poprawnych wpisow w index.json.";
+        list.innerHTML = "Nie znaleziono poprawnych tabelek. Oczekiwany uklad: bazatabelek/<nazwa>/tabelka.json";
         return;
     }
 
@@ -1549,6 +1554,7 @@ async function showDbOverlay(){
             <div>Data utworzenia: ${x.meta.data}</div>
             <div>Opis: ${x.meta.opis}</div>
             <button class="btn btn-main" onclick="loadDbItem(${i})">Wczytaj</button>
+            <button class="btn btn-secondary" onclick="downloadDbItem(${i})">Pobierz</button>
         </div>
     `).join("");
     window.__dbItems = items;
@@ -1558,14 +1564,21 @@ async function loadDbItem(index){
     const item = window.__dbItems?.[index];
     if(!item) return;
     try{
-        const res = await fetch(item.jsonUrl + "?t=" + Date.now());
-        if(!res.ok) throw new Error("json missing");
-        const data = await res.json();
+        const data = item.tableDataObj || (await (await fetch(item.jsonUrl + "?t=" + Date.now())).json());
         importTableData(data);
         document.getElementById("dbOverlay")?.remove();
     } catch(_){
         alert("Nie udalo sie wczytac pliku z bazy.");
     }
+}
+
+function downloadDbItem(index){
+    const item = window.__dbItems?.[index];
+    if(!item) return;
+    const a = document.createElement("a");
+    a.href = item.jsonUrl;
+    a.download = `${item.folder}.json`;
+    a.click();
 }
 
 // ---- PATCH v6.2 ----
