@@ -1,0 +1,2021 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Trening Słówek z Tabelki by Szymix7👑 v6</title>
+<style>
+body { font-family: Arial,sans-serif; margin:20px; background:#f4f4f9; }
+textarea { width:100%; height:150px; }
+table { border-collapse: collapse; margin-top:15px; width:100%; }
+td, th { border:1px solid #aaa; padding:6px; text-align:center; min-width:100px; }
+input { width:95%; border:none; text-align:center; padding:5px; }
+.fixed { background: orange !important; color: white; }
+.info { background: pink !important; }
+.discovered { background: lightblue !important; }
+.correct { background: lightgreen !important; }
+.wrong { background: #ff6666 !important; }
+.toDiscover { outline: 2px solid #00f; }
+.btn { margin:5px; padding:8px 12px; cursor:pointer; border:none; border-radius:4px; }
+.btn:hover { opacity:0.8; }
+.btn-main { background:#007bff; color:white; }
+.btn-danger { background:#dc3545; color:white; }
+.btn-secondary { background:#6c757d; color:white; }
+#controls { margin-top:15px; }
+#extraText { height:80px; margin-top:10px; }
+#extraTextDisplay { white-space:pre-wrap; background:#fff; padding:8px; border:1px solid #ccc; margin-top:10px; min-height:60px; }
+.timerOverlay {
+    position: fixed;
+    right: 20px;
+    top: 80px;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding:10px 12px;
+    border-radius:6px;
+    z-index:9999;
+    cursor: move;
+    user-select:none;
+}
+.timerOverlay.locked { cursor: default; }
+.timerOverlay .lockBtn { background:transparent; border:none; color:white; font-size:16px; margin-left:8px; cursor:pointer; }
+.editorSelected { outline: 3px solid #007bff; }
+.editorModeLabel { margin: 8px 0; font-weight: bold; }
+.hintMeta { margin-top: 6px; font-size: 12px; color: #333; background: #fff7c2; padding: 4px 6px; border-radius: 4px; }
+.hintCombined { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+.hintSquare { width: 18px; height: 18px; border: 1px solid #333; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; background: #fff; }
+.hintGap { width: 14px; height: 18px; display: inline-block; }
+.excludeFixed { box-shadow: inset -6px 0 0 #ffd400; }
+.hintBadgeBtn { position:absolute; right:2px; top:2px; width:16px; height:16px; border:none; border-radius:3px; background:#ffd400; cursor:pointer; font-size:11px; line-height:16px; padding:0; }
+td.hasHintBadge { position: relative; padding-right: 20px; }
+.dbOverlay { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:13000; overflow:auto; }
+.dbPanel { max-width:900px; margin:30px auto; background:#fff; border-radius:10px; padding:14px; }
+.dbItem { border:1px solid #ddd; border-radius:8px; padding:10px; margin:8px 0; background:#fafafa; }
+</style>
+</head>
+<body>
+
+<h2>Trening Słówek z Tabelki by Szymix7👑 v6</h2>
+
+<textarea id="inputArea" placeholder="Wklej tabelkę z Worda..."></textarea><br>
+<button class="btn btn-main" onclick="convertTable()">Konwertuj</button>
+<button class="btn btn-secondary" onclick="clearAll()">Wyczyść</button>
+<button class="btn btn-secondary" onclick="exportTable()">Eksportuj tabelę</button>
+<input type="file" id="importFile" style="display:inline-block;" onchange="importTable(this.files[0])">
+<button class="btn btn-secondary" onclick="openDbFilePicker()">Wybierz plik z bazy</button>
+<button class="btn btn-secondary" onclick="createTable()">Stwórz tabelę</button>
+<button class="btn btn-secondary" onclick="editTable()">Edytuj tabelę</button>
+
+<label style="display:inline-flex; align-items:center; margin-left:10px; cursor:pointer;">
+  <input type="checkbox" id="autoEnter" style="margin:0 5px 0 0;"> Automatyczny Enter
+</label>
+
+<label style="display:inline-flex; align-items:center; margin-left:10px; cursor:pointer;">
+  <input type="checkbox" id="autoClear" style="margin:0 5px 0 0;" checked> Automatyczne Kasowanie Tekstu
+</label>
+
+<label style="display:inline-flex; align-items:center; margin-right:15px;">
+  <input type="checkbox" id="shuffleRows" style="margin:0 8px 0 0;" checked> Tasuj wiersze (tylko w teście)
+</label>
+
+<label style="display:inline-flex; align-items:center; margin-left:10px; cursor:pointer;">
+  <input type="checkbox" id="showStatsCheckbox" style="margin:0 5px 0 0;" checked> Statystyki
+</label>
+
+<div id="controls" style="display:none;">
+<p>Opcje:</p>
+<button class="btn btn-secondary" onclick="setMode('random')">Losowe</button>
+<button class="btn btn-secondary" onclick="setMode('fixed')">Losowe wartościowe</button>
+<input type="number" id="fixedCount" value="-1" style="width:60px; display:inline-block; margin-left:10px;" title="Ile komórek na linijkę zakryć"><br><br>
+<button class="btn btn-secondary" onclick="setMode('manual')">Manualne</button>
+<button class="btn btn-secondary" onclick="setMode('info')">Zaznaczanie informacyjne</button>
+<button class="btn btn-secondary" onclick="setMode('excludeFixed')">Ignoruj w losowe wartościowe</button>
+<button class="btn btn-secondary" onclick="toggleManualSelect()">Manualny tryb wyboru</button><br><br>
+
+Globalna liczba prób: <input type="number" id="maxTries" value="-1" style="width:60px;"> (-1 = brak limitu)<br>
+Ilość prób na komórkę: <input type="number" id="cellTries" value="-1" style="width:60px;"> (-1 = brak limitu)<br>
+Limit czasu (sekundy): <input type="number" id="timeLimit" value="-1" style="width:80px;"> (-1 lub 0 = brak limitu)<br><br>
+
+<button class="btn btn-main" onclick="startQuiz()">Start</button>
+</div>
+
+<div id="tableContainer"></div>
+
+<!-- pole tekstowe z pytaniami — edytowalne w menu głównym, w quizie pokazujemy tylko display -->
+<textarea id="extraText" placeholder="Tu wpisz pytania/opisy (np. jak krzyżówka). Edytowalne tylko w menu głównym."></textarea>
+<div id="extraTextDisplay" style="display:none"></div>
+
+<div id="quizControls" style="display:none; margin-top:15px;">
+<button class="btn btn-secondary" onclick="enterDiscoverMode()">Odkryj wybrane</button>
+<button class="btn btn-secondary" onclick="enterRenewMode()">Odnów wybrane</button>
+<button class="btn btn-secondary" onclick="armHintMode()">Podpowiedź (1 klik)</button>
+<button class="btn btn-secondary" onclick="showAll()">Pokaż wszystko</button>
+<button id="backBtn" class="btn btn-secondary" onclick="backToMenu()" style="display:inline-block;">Wróć</button>
+</div>
+
+<script>
+let tableData = [];
+let mode = null;
+let savedConfig = {};
+let globalTries = 0;
+let maxGlobalExceeded = false;
+let discoverMode = false;
+let renewMode = false;
+let manualSelectMode = false;
+let hintModeArmed = false;
+let editorMode = null;
+let editorSelected = null;
+let editorBuffer = [];
+
+let timerInterval = null;
+let timerRemaining = 0;
+let timerOverlay = null;
+let timerLocked = true;
+let dragState = { active: false, startX:0, startY:0, initLeft:0, initTop:0 };
+
+function normalize(str){
+    return (str||"")
+        .toLowerCase()
+        .replace(/ä/g,'a')
+        .replace(/ö/g,'o')
+        .replace(/ü/g,'u')
+        .replace(/ß/g,'b')
+        .replace(/ą/g,'a')
+        .replace(/ę/g,'e')
+        .replace(/ć/g,'c')
+        .replace(/ł/g,'l')
+        .replace(/ń/g,'n')
+        .replace(/ó/g,'o')
+        .replace(/ś/g,'s')
+        .replace(/ż/g,'z')
+        .replace(/ź/g,'z')
+        .trim();
+}
+
+function parseAnswerOptions(answer){
+    const raw = (answer || "").split(",").map(v => normalize(v)).filter(Boolean);
+    return raw.length ? raw : [normalize(answer || "")];
+}
+
+function getMarkMap(){
+    const marks = {};
+    document.querySelectorAll("#tableContainer td").forEach(td=>{
+        marks[`${td.dataset.r}-${td.dataset.c}`] = {
+            info: td.classList.contains("info"),
+            fixed: td.classList.contains("fixed"),
+            excludeFixed: td.classList.contains("excludeFixed")
+        };
+    });
+    return marks;
+}
+
+function convertTable(){
+    let text = document.getElementById("inputArea").value.trim();
+    if(!text) return;
+    tableData = text.split("\n").map(row=>row.split(/\t/));
+    renderTable(true);
+    document.getElementById("controls").style.display = "block";
+    // ensure extraText editable visible
+    document.getElementById("extraText").style.display = "block";
+    document.getElementById("extraTextDisplay").style.display = "none";
+
+    // tableData musi pozostać zwykłą tablicą 2D (bez obiektów), bo reszta kodu używa row.forEach
+}
+
+function renderTable(selectable=false){
+    let html = "<table>";
+    tableData.forEach((row,r)=>{
+        html += "<tr>";
+        row.forEach((cell,c)=>{
+            html += `<td data-r="${r}" data-c="${c}" data-answer="${cell}" onclick="${selectable?'toggleCell(this)':''}">${cell}</td>`;
+        });
+        html += "</tr>";
+    });
+    html += "</table>";
+    document.getElementById("tableContainer").innerHTML = html;
+}
+
+function toggleCell(td){
+    if(manualSelectMode || mode==="manual") td.classList.toggle("fixed");
+    else if(mode==="info") td.classList.toggle("info");
+    else if(mode==="excludeFixed") td.classList.toggle("excludeFixed");
+}
+
+function setMode(m){ mode=m; alert("Wybrano tryb: "+m); }
+
+function toggleManualSelect(){
+    manualSelectMode = !manualSelectMode;
+    alert("Manualny tryb wyboru " + (manualSelectMode ? "włączony" : "wyłączony"));
+    updateCellClickHandlers();
+}
+
+let quizStartTime = 0;
+
+function startQuiz(){
+    quizStartTime = Date.now();
+    // --- OSTRZEŻENIE O BRAKU ZAŁADOWANEJ TABELI (tylko jeśli brak pliku) ---
+    const fileInput = document.getElementById("importFile");
+    if (!fileInput.files.length) {
+        alert(
+            "Nie masz załadowanej tabeli!\n\n" +
+            "Aby rozpocząć quiz, musisz:\n" +
+            "1️⃣ Wyeksportować tabelę,\n" +
+            "2️⃣ Załadować plik tabeli (.json) za pomocą przycisku 'Wybierz plik'.\n\n" +
+            "Po wykonaniu tych kroków kliknij ponownie 'Start'."
+        );
+        return; // zatrzymuje uruchamianie quizu
+    }
+
+    savedConfig.manualSelectMode = manualSelectMode; // <-- dodaj
+    mode = mode === "info" ? null : mode; // wyłącza tryb info po starcie
+    manualSelectMode = false; // też wyłącz manualny tryb wyboru
+    manualSelectMode = false;
+    if(!mode){ alert("Wybierz tryb!"); return; }
+
+    // save original state (do przywrócenia)
+    savedConfig = {
+        mode: mode,
+        fixedCount: parseInt(document.getElementById("fixedCount").value)||2,
+        maxGlobal: parseInt(document.getElementById("maxTries").value)||-1,
+        maxCell: parseInt(document.getElementById("cellTries").value)||-1,
+        tableState: JSON.parse(JSON.stringify(tableData)), // original
+        extraText: document.getElementById("extraText").value || "",
+        cellStates: []
+    };
+    globalTries = 0;
+    maxGlobalExceeded = false;
+
+    // prepare quizData as a copy so original tableData not changed
+    let quizData = prepareQuizData();
+    // shuffle rows only in quiz if user ticked shuffleRows
+    if(document.getElementById("shuffleRows").checked){
+        quizData.sort(()=>0.5 - Math.random());
+    }
+
+    let html = "<table>";
+    quizData.forEach((row,r)=>{
+        html += "<tr>";
+        let indices = row.map((_,i)=>i);
+        let fixed=[];
+        if(mode==="random") fixed = indices.filter(i=>{
+            // origTd based on original rendered table positions might not match after shuffle,
+            // but we only want to check if original had info/fixed — simpler: check original tableState
+            // find corresponding original row index for this row's content (approximate)
+            return true; // we'll not rely on origTd for info in shuffled quiz; info/fixed from original tableState should be preserved via class checks later if needed.
+        }).sort(()=>0.5-Math.random()).slice(0,Math.floor(Math.random()*3)+1);
+        else if(mode==="fixed") fixed = indices.sort(()=>0.5-Math.random()).slice(0,savedConfig.fixedCount);
+
+        row.forEach((cell,c)=>{
+            let tdClass="", content="";
+            // try find original cell state (info/fixed) by matching value in original tableState
+            let origStateClass = ""; // default
+            // search in original tableState for same cell value in same row length to guess class — but to keep simple we respect only 'info'/'fixed' if they were set in original rendered DOM before startQuiz.
+            // Instead, check savedConfig.tableState for existence of same cell in same row index; if shuffle we don't worry — user expects info marking preserved on visible table maybe not necessary
+            // We'll preserve per-cell 'info' or 'fixed' by checking the currently rendered DOM cells before startQuiz (the original table view still exists in DOM).
+            let origTd = document.querySelector(`#tableContainer td[data-answer="${cell}"]`);
+            if(origTd && origTd.classList.contains("info")) { tdClass="info"; content = cell; }
+            else if(origTd && origTd.classList.contains("fixed") && mode==="manual"){ tdClass="fixed"; content=cell; }
+            else if((mode==="manual" && origTd?.classList.contains("fixed"))||fixed.includes(c)){
+                tdClass="fixed"; 
+                content=cell;
+            }
+            else{
+                let maxCell = savedConfig.maxCell;
+                content=`<input data-answer="${cell}" data-tries="0" data-maxtries="${maxCell}" onkeydown="checkInput(event,this)">`;
+            }
+            html += `<td class="${tdClass}" data-answer="${cell}">${content}</td>`;
+        });
+        html += "</tr>";
+    });
+    html += "</table>";
+    document.getElementById("tableContainer").innerHTML = html;
+
+    // blokada pustych komórek w quizie
+    document.querySelectorAll("#tableContainer td").forEach(td => {
+        if(!td.dataset.answer || td.dataset.answer.trim() === ""){
+            td.style.background = "black";
+            td.style.color = "white";
+            td.innerHTML = ""; // usuwa input
+            td.onclick = null;  // blokada kliknięć
+        }
+    });
+
+    // show extraText as display (read-only) and hide editable textarea
+    document.getElementById("extraTextDisplay").textContent = savedConfig.extraText;
+    document.getElementById("extraTextDisplay").style.display = savedConfig.extraText ? "block" : "none";
+    document.getElementById("extraText").style.display = "none";
+
+    document.getElementById("quizControls").style.display = "block";
+    document.getElementById("controls").style.display = "none";
+    updateCellClickHandlers();
+    setupAutoEnter();
+
+    // Timer: start only if >0
+    const timeLimit = parseInt(document.getElementById("timeLimit").value);
+    if(!isNaN(timeLimit) && timeLimit > 0){
+        startTimer(timeLimit);
+    }
+
+    savedConfig.manualSelectMode = manualSelectMode || false;
+
+    // zapisz tylko 'info' i 'fixed' PRZED startem quizu
+    savedConfig.cellStates = [];
+    document.querySelectorAll("#tableContainer td").forEach(td=>{
+        if(td.classList.contains("info") || td.classList.contains("fixed")){
+            savedConfig.cellStates.push({
+                r: parseInt(td.dataset.r),
+                c: parseInt(td.dataset.c),
+                className: td.classList.contains("info") ? "info" : "fixed"
+            });
+        }
+    });
+
+}
+
+function startTimer(seconds){
+    stopTimer(); // clear existing if any
+    timerRemaining = seconds;
+    createTimerOverlay();
+    updateTimerOverlay();
+    timerInterval = setInterval(()=>{
+        timerRemaining--;
+        updateTimerOverlay();
+        if(timerRemaining <= 0){
+    	    stopTimer();
+    	    alert("Czas minął! Odpowiedzi zostaną odkryte.");
+    	    showAll(); // zamiast ustawiać wszystkim na wrong
+	    // --- wywołanie statystyk, jeśli checkbox Statystyki jest włączony ---
+	    if (document.getElementById("showStatsCheckbox")?.checked) {
+    	        const statsHtml = calculateStats(); // funkcja generująca treść statystyk
+	    	showStatsOverlay(statsHtml); // pokazuje nakładkę
+	    }
+	}
+    }, 1000);
+}
+
+function stopTimer(){
+    if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    if(timerOverlay){ timerOverlay.remove(); timerOverlay = null; }
+    dragState.active = false;
+    timerLocked = true;
+}
+
+function createTimerOverlay(){
+    // remove existing
+    if(timerOverlay) timerOverlay.remove();
+
+    timerOverlay = document.createElement('div');
+    timerOverlay.className = 'timerOverlay locked';
+    timerOverlay.style.right = '20px';
+    timerOverlay.style.top = '80px';
+    timerOverlay.innerHTML = `<span id="timerText"></span><button class="lockBtn" id="timerLockBtn">🔒</button>`;
+    document.body.appendChild(timerOverlay);
+
+    timerLocked = true;
+
+    // events for lock toggle
+    document.getElementById('timerLockBtn').addEventListener('click', ()=>{
+        timerLocked = !timerLocked;
+        if(timerLocked){
+            timerOverlay.classList.add('locked');
+            document.getElementById('timerLockBtn').textContent = '🔒';
+            // snap to fixed: convert current absolute position to fixed anchored position by setting right/top
+            const rect = timerOverlay.getBoundingClientRect();
+            const right = window.innerWidth - rect.right;
+            timerOverlay.style.right = (right + 'px');
+            timerOverlay.style.top = (rect.top + 'px');
+            timerOverlay.style.position = 'fixed';
+        } else {
+            timerOverlay.classList.remove('locked');
+            document.getElementById('timerLockBtn').textContent = '🔓';
+            // switch to absolute to allow dragging within the document
+            const rect = timerOverlay.getBoundingClientRect();
+            timerOverlay.style.position = 'absolute';
+            timerOverlay.style.left = rect.left + 'px';
+            timerOverlay.style.top = rect.top + 'px';
+            timerOverlay.style.right = 'auto';
+        }
+    });
+
+    // dragging only when unlocked
+    timerOverlay.addEventListener('mousedown', (e)=>{
+        if(timerLocked) return;
+        dragState.active = true;
+        dragState.startX = e.clientX;
+        dragState.startY = e.clientY;
+        dragState.initLeft = parseInt(timerOverlay.style.left || 0);
+        dragState.initTop = parseInt(timerOverlay.style.top || 0);
+        e.preventDefault();
+    });
+    document.addEventListener('mousemove', (e)=>{
+        if(!dragState.active) return;
+        const dx = e.clientX - dragState.startX;
+        const dy = e.clientY - dragState.startY;
+        timerOverlay.style.left = (dragState.initLeft + dx) + 'px';
+        timerOverlay.style.top = (dragState.initTop + dy) + 'px';
+    });
+    document.addEventListener('mouseup', ()=>{ dragState.active = false; });
+}
+
+function updateTimerOverlay(){
+    if(!timerOverlay) return;
+    const minutes = Math.floor(timerRemaining / 60);
+    const seconds = timerRemaining % 60;
+    document.getElementById('timerText').textContent = `${minutes}:${String(seconds).padStart(2,'0')}`;
+}
+
+function setupAutoEnter(){
+    const autoEnter = document.getElementById('autoEnter');
+    document.querySelectorAll('#tableContainer input').forEach(input=>{
+        input.addEventListener('focusout', ()=>{
+            if(autoEnter.checked && input.value.trim() !== ''){
+                checkInput({ key: 'Enter' }, input);
+            }
+        });
+    });
+}
+
+function checkInput(e,input){
+    if(e.key==="Enter"){
+        let val = normalize(input.value);
+        let ans = normalize(input.dataset.answer);
+
+        if(input.dataset.triesBeforeCorrect === undefined){
+            input.dataset.triesBeforeCorrect = val === ans ? 0 : 1;
+        }
+
+        if(val === ans){
+            input.parentElement.classList.add("correct");
+            input.parentElement.textContent = input.dataset.answer;
+            return; // nic nie liczymy dalej
+        }
+
+        // jeśli odpowiedź błędna:
+        let tries = parseInt(input.dataset.tries)||0;
+        let maxCell = parseInt(input.dataset.maxtries)||-1;
+        let maxGlobal = savedConfig.maxGlobal;
+
+        input.dataset.tries = tries+1;
+        globalTries++;
+
+        input.classList.add("wrong");
+        setTimeout(()=>{
+            input.classList.remove("wrong");
+            if(document.getElementById("autoClear").checked){
+                input.value=""; // kasuje tylko jeśli opcja włączona
+            }
+        },1500);
+
+        if(maxCell!==-1 && tries+1>=maxCell){
+            input.disabled=true;
+            input.parentElement.classList.add("wrong");
+        }
+
+        if(maxGlobal !== -1 && globalTries>=maxGlobal && !maxGlobalExceeded){
+            maxGlobalExceeded = true;
+            alert("Popełniłeś za dużo błędów globalnie! Test kończy się.");
+            showAll();
+	    // --- wywołanie statystyk, jeśli checkbox Statystyki jest włączony ---
+	    if (document.getElementById("showStatsCheckbox")?.checked) {
+    	        const statsHtml = calculateStats(); // funkcja generująca treść statystyk
+    		showStatsOverlay(statsHtml); // pokazuje nakładkę
+	    }
+        }
+    }
+}
+
+// --- TRYB ODKRYJ WYBRANE ---
+function enterDiscoverMode(){
+    if(maxGlobalExceeded){
+        alert("Nie możesz odkrywać pojedynczych komórek po przekroczeniu limitu globalnego.");
+        return;
+    }
+    discoverMode = true;
+    renewMode = false;
+    updateCellClickHandlers();
+
+    if(!document.getElementById("discoverDoneBtn")){
+        let btn = document.createElement("button");
+        btn.textContent = "Gotowe";
+        btn.className = "btn btn-main";
+        btn.id = "discoverDoneBtn";
+        btn.onclick = ()=> {
+            document.querySelectorAll("#tableContainer td.toDiscover").forEach(td=>{
+                let answer = td.dataset.answer;
+                td.textContent = answer;
+                td.classList.add("discovered");
+                td.classList.remove("toDiscover");
+            });
+            discoverMode = false;
+            updateCellClickHandlers();
+            btn.remove();
+        };
+        document.getElementById("quizControls").appendChild(btn);
+    }
+}
+
+// --- TRYB ODNÓW WYBRANE ---
+function enterRenewMode(){
+    renewMode = !renewMode;
+    discoverMode = false;
+    updateCellClickHandlers();
+    alert("Tryb odnów " + (renewMode ? "włączony" : "wyłączony"));
+}
+
+// --- AKTUALIZACJA KLIKÓW NA KOMÓRKACH ---
+function updateCellClickHandlers(){
+    document.querySelectorAll("#tableContainer td").forEach(td=>{
+        td.onclick = null;
+
+        if(manualSelectMode){
+            td.onclick = ()=> td.classList.toggle("fixed");
+            return;
+        }
+
+        if(mode==="info"){
+            td.onclick = ()=> td.classList.toggle("info");
+            return;
+        }
+
+        if(discoverMode){
+            let inp = td.querySelector("input");
+            if(inp && !td.classList.contains("wrong")){
+                td.onclick = ()=> td.classList.toggle("toDiscover");
+            }
+        }
+
+        if(renewMode){
+            td.onclick = ()=>{
+                if(td.classList.contains("correct") || td.classList.contains("wrong") || td.classList.contains("discovered") || td.querySelector("input")){
+                    let answer = td.dataset.answer;
+                    td.classList.remove("correct","wrong","discovered","toDiscover");
+                    td.innerHTML = `<input data-answer="${answer}" data-tries="0" data-maxtries="${savedConfig.maxCell||-1}" onkeydown="checkInput(event,this)">`;
+                    setupAutoEnter();
+                }
+            };
+        }
+    });
+}
+
+function showAll(){
+    document.querySelectorAll("td input").forEach(inp=>{
+        let td=inp.parentElement;
+        td.textContent=inp.dataset.answer;
+        let val=normalize(inp.value);
+        let ans=normalize(inp.dataset.answer);
+        if(val===ans && val!==""){ td.classList.add("correct"); }
+        else{ td.classList.add("wrong"); }
+    });
+}
+
+function backToMenu(){
+    stopTimer();
+
+    const shuffle = document.getElementById("shuffleRows").checked;
+
+    // Zapis aktualnego stanu info/fixed przed przywróceniem
+    let tds = document.querySelectorAll("#tableContainer td");
+    savedConfig.cellStates = Array.from(tds).map(td=>{
+    	let cls = "";
+    	if(td.classList.contains("info")) cls = "info";
+    	else if(savedConfig.mode === "manual" && td.classList.contains("fixed")) cls = "fixed";
+
+    	return {
+            value: td.dataset.answer || td.textContent,
+            className: cls
+    	};
+    });
+
+
+    // Przywrócenie tableData do oryginału
+    tableData = JSON.parse(JSON.stringify(savedConfig.tableState));
+    renderTable(true); // od razu buduje TD
+
+    let newTds = document.querySelectorAll("#tableContainer td");
+
+    if(!shuffle){
+    	// Przywracanie po indeksach (shuffle OFF)
+    	newTds.forEach((td,i)=>{
+            const state = savedConfig.cellStates[i];
+            if(!state) return;
+            if (state.className === "info") {
+                td.classList.add("info");
+            }
+            if (savedConfig.mode === "manual" && state.className === "fixed") {
+                td.classList.add("fixed");
+            }
+    	});
+} else {
+    // Przywracanie po wartości (shuffle ON)
+    newTds.forEach(td=>{
+        const answer = td.dataset.answer;
+        const state = savedConfig.cellStates.find(s => 
+            s.value && normalize(s.value) === normalize(answer)
+        );
+        if(state){
+            if (state.className === "info") {
+                td.classList.add("info");
+            }
+            if (savedConfig.mode === "manual" && state.className === "fixed") {
+                td.classList.add("fixed");
+            }
+        }
+    });
+}
+
+    // Przywrócenie manualSelectMode tylko jeśli tryb to "manual"
+    if (savedConfig.mode === "manual") {
+    	manualSelectMode = savedConfig.manualSelectMode || false;
+    } else {
+    	manualSelectMode = false;
+    }
+
+    // Aktualizacja klików
+    updateCellClickHandlers();
+
+    // Przywrócenie extraText
+    document.getElementById("extraText").value = savedConfig.extraText || "";
+    document.getElementById("extraText").style.display = "block";
+    document.getElementById("extraTextDisplay").style.display = "none";
+
+    // Widoki paneli
+    document.getElementById("controls").style.display="block";
+    document.getElementById("quizControls").style.display="none";
+
+    // Przywrócenie ustawień quizu
+    mode = savedConfig.mode;
+    document.getElementById("fixedCount").value = savedConfig.fixedCount;
+    document.getElementById("maxTries").value = savedConfig.maxGlobal;
+    document.getElementById("cellTries").value = savedConfig.maxCell;
+    discoverMode = false;
+    renewMode = false;
+
+    // --- wywołanie statystyk, jeśli checkbox Statystyki jest włączony ---
+    if (document.getElementById("showStatsCheckbox")?.checked) {
+        const statsHtml = calculateStats(); // funkcja generująca treść statystyk
+        showStatsOverlay(statsHtml); // pokazuje nakładkę
+    }
+}
+
+function clearAll(){
+    document.getElementById("inputArea").value="";
+    document.getElementById("tableContainer").innerHTML="";
+    document.getElementById("controls").style.display="none";
+    document.getElementById("quizControls").style.display="none";
+    document.getElementById("extraText").value = "";
+    document.getElementById("extraText").style.display = "block";
+    document.getElementById("extraTextDisplay").style.display = "none";
+    
+    // reset zmiennych
+    tableData = [];
+    mode = null;
+    savedConfig = {};
+    globalTries = 0;
+    maxGlobalExceeded = false;
+    manualSelectMode = false;
+    discoverMode = false;
+    renewMode = false;
+
+    // reset input file (żeby nie pokazywało starego pliku)
+    const importFile = document.getElementById("importFile");
+    if(importFile) importFile.value = "";
+
+    stopTimer();
+}
+
+// --- FUNKCJE IMPORT / EKSPORT ---
+// Eksportujemy teraz obiekt { table: tableData, extraText: ... }
+function exportTable(){
+    const tds = document.querySelectorAll("#tableContainer td");
+    const exportData = Array.from(tds).map(td => ({
+        r: td.dataset.r,
+        c: td.dataset.c,
+        value: td.dataset.answer,
+        className: td.className,
+        innerHTML: td.innerHTML
+    }));
+    const payload = {
+        table: exportData,
+        extraText: document.getElementById("extraText").value || ""
+    };
+    const blob = new Blob([JSON.stringify(payload)], {type: "application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "tabela.json";
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function importTable(file){
+    const reader = new FileReader();
+    reader.onload = function(e){
+        const data = JSON.parse(e.target.result);
+        let cellsData = data.table || data; // jeśli starszy format
+        tableData = [];
+        const rows = {};
+        cellsData.forEach(cell=>{
+            if(!rows[cell.r]) rows[cell.r]=[];
+            rows[cell.r][cell.c] = cell.value;
+        });
+        tableData = Object.values(rows);
+        renderTable(true);
+        cellsData.forEach(cell=>{
+            const td = document.querySelector(`td[data-r="${cell.r}"][data-c="${cell.c}"]`);
+            if(td){ td.className = cell.className; td.innerHTML = cell.innerHTML; }
+        });
+        document.getElementById("extraText").value = data.extraText || ""; // tu dodane
+        updateCellClickHandlers();
+        document.getElementById("controls").style.display = "block";
+        setupAutoEnter();
+    }
+    reader.readAsText(file);
+}
+
+function createTable(){
+    let rows = prompt("Podaj liczbę wierszy:");
+    let cols = prompt("Podaj liczbę kolumn:");
+    if(!rows || !cols) return;
+
+    let html="<table>";
+    for(let r=0;r<rows;r++){
+        html+="<tr>";
+        for(let c=0;c<cols;c++){
+            html+=`<td><input id="cell_${r}_${c}" style="width:95%"></td>`;
+        }
+        html+="</tr>";
+    }
+    html+="</table>";
+    html+=`
+        <button class="btn btn-main" onclick="saveEditedTable()">Zapisz tabelkę</button>
+        <button class="btn btn-secondary" onclick="copyTableCode()">Kopiuj kod tabelki</button>
+        <button class="btn btn-danger" onclick="closeEditor()">Zamknij</button>
+    `;
+    document.getElementById("tableContainer").innerHTML=html;
+    document.getElementById("controls").style.display="none";
+    document.getElementById("extraText").style.display = "block";
+    document.getElementById("extraTextDisplay").style.display = "none";
+}
+
+function editTable(){
+    if(tableData.length===0){
+        alert("Najpierw wczytaj tabelę.");
+        return;
+    }
+    let html="<table>";
+    tableData.forEach((row,r)=>{
+        html+="<tr>";
+        row.forEach((cell,c)=>{
+            html+=`<td><input id="cell_${r}_${c}" style="width:95%" value="${cell}"></td>`;
+        });
+        html+="</tr>";
+    });
+    html+="</table>";
+    html+=`
+        <button class="btn btn-main" onclick="saveEditedTable()">Zapisz tabelkę</button>
+        <button class="btn btn-secondary" onclick="copyTableCode()">Kopiuj kod tabelki</button>
+        <button class="btn btn-danger" onclick="closeEditor()">Zamknij</button>
+    `;
+    document.getElementById("tableContainer").innerHTML=html;
+    document.getElementById("controls").style.display="none";
+    document.getElementById("extraText").style.display = "block";
+    document.getElementById("extraTextDisplay").style.display = "none";
+}
+
+function saveEditedTable(){
+    let newData=[];
+    const rows=document.querySelectorAll("#tableContainer tr");
+    rows.forEach((tr,r)=>{
+        let rowData=[];
+        tr.querySelectorAll("input").forEach((inp,c)=>{
+            rowData.push(inp.value);
+        });
+        newData.push(rowData);
+    });
+    tableData=newData;
+    renderTable(true);
+    // czarne dla pustych (w menu też mogą być czarne)
+    document.querySelectorAll("#tableContainer td").forEach(td=>{
+        if(!td.dataset.answer || td.dataset.answer.trim()===""){
+            td.style.background="black";
+            td.style.color="white";
+            td.onclick=null;
+        }
+    });
+    document.getElementById("controls").style.display="block";
+    // extraText remains editable in menu
+    document.getElementById("extraText").style.display = "block";
+    document.getElementById("extraTextDisplay").style.display = "none";
+}
+
+function copyTableCode(){
+    let code = tableData.map(row=>row.join("\t")).join("\n");
+    navigator.clipboard.writeText(code).then(()=>{
+        alert("Skopiowano tabelkę do schowka!");
+    });
+}
+
+function closeEditor(){
+    document.getElementById("tableContainer").innerHTML="";
+    renderTable(true);
+    document.getElementById("controls").style.display="block";
+    document.getElementById("extraText").style.display = "block";
+    document.getElementById("extraTextDisplay").style.display = "none";
+}
+
+function prepareQuizData() {
+    let quizData = JSON.parse(JSON.stringify(tableData));
+
+    // infoRows zawsze na górze
+    let infoRows = quizData.filter(r => r.hasInfo);
+    let normalRows = quizData.filter(r => !r.hasInfo);
+
+    // zachowanie oryginalnej kolejności infoRows
+    infoRows.sort((a,b) => a.originalIndex - b.originalIndex);
+
+    // jeśli shuffle włączone, tasujemy normalRows
+    if(document.getElementById("shuffleRows").checked && mode !== "manual") {
+        normalRows.sort(() => 0.5 - Math.random());
+    }
+
+    return infoRows.concat(normalRows);
+}
+
+function maybeShowStats() {
+    const showStats = document.getElementById("showStatsCheckbox").checked;
+    if(!showStats) return;
+
+    const statsHtml = calculateStats();
+    showStatsOverlay(statsHtml);
+}
+
+function showStats(statsHtml){
+    // jeśli nakładka już istnieje, usuń
+    const existing = document.getElementById("statsOverlay");
+    if(existing) existing.remove();
+
+    const overlay = document.createElement("div");
+    overlay.id = "statsOverlay";
+    overlay.style.position = "fixed";
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.background = "rgba(0,0,0,0.85)";
+    overlay.style.color = "white";
+    overlay.style.zIndex = "99999";
+    overlay.style.overflowY = "auto";
+    overlay.style.padding = "20px";
+    overlay.style.boxSizing = "border-box";
+    overlay.innerHTML = `
+        <h2>Statystyki Quizu</h2>
+        <div>${statsHtml}</div>
+        <button style="
+            display:block;
+            margin:20px auto 0;
+            padding:10px 20px;
+            font-size:16px;
+            cursor:pointer;
+            border:none;
+            border-radius:5px;
+            background:#007bff;
+            color:white;
+        " onclick="hideStats()">Kontynuuj</button>
+    `;
+    document.body.appendChild(overlay);
+}
+
+function hideStats(){
+    const overlay = document.getElementById("statsOverlay");
+    if(overlay) overlay.remove();
+}
+
+function calculateStats(){
+    if(!tableData || tableData.length===0) return "Brak danych do statystyk.";
+
+    let totalCells = 0;
+    let correctCells = 0;
+    let firstTryCorrect = 0;
+    let globalErrors = 0;
+    let maxCorrectStreak = 0;
+    let maxWrongStreak = 0;
+    let currentCorrectStreak = 0;
+    let currentWrongStreak = 0;
+    let usedDiscover = 0;
+
+    let cellErrorMap = {}; // klucz: "r-c", wartość: liczba błędów
+
+    document.querySelectorAll("#tableContainer td").forEach(td=>{
+        let answer = td.dataset.answer || td.textContent;
+        if(!answer) return;
+
+        totalCells++;
+
+        // sprawdzamy, czy użytkownik podał wartość
+        let userVal = td.dataset.uservalue || normalize(td.textContent);
+        let correct = (normalize(answer) === userVal);
+
+        // poprawne
+        if(correct) correctCells++;
+
+        // pierwsza próba
+        let tries = parseInt(td.dataset.tries || "0");
+        if(correct && tries === 0) firstTryCorrect++;
+
+        // błędy globalne
+        globalErrors += tries;
+        if(tries>0){
+            cellErrorMap[`R${td.dataset.r}-C${td.dataset.c}`] = tries;
+        }
+
+        // passy
+        if(correct){
+            currentCorrectStreak++;
+            if(currentCorrectStreak>maxCorrectStreak) maxCorrectStreak=currentCorrectStreak;
+            currentWrongStreak=0;
+        } else {
+            currentWrongStreak++;
+            if(currentWrongStreak>maxWrongStreak) maxWrongStreak=currentWrongStreak;
+            currentCorrectStreak=0;
+        }
+
+        // odkrycia
+        if(td.dataset.discovered === "1" || td.classList.contains("discovered")) usedDiscover++;
+    });
+
+    // Top komórki z błędami
+    let topCells = Object.entries(cellErrorMap)
+        .sort((a,b)=>b[1]-a[1])
+        .slice(0,3)
+        .map((e,i)=>`${i+1}. ${e[0]} - ${e[1]} błąd(ów)`);
+
+    // procenty
+    let percentGuessed = totalCells ? Math.round(correctCells/totalCells*100) : 0;
+    let percentFirstTry = totalCells ? Math.round(firstTryCorrect/totalCells*100) : 0;
+
+    // czas – jeśli masz zmienną timerRemaining lub licznik startowy możesz tu dodać np. czas trwania quizu
+    let timeUsed = "Niezaimplementowane"; // placeholder
+
+    let statsHtml = `
+        <p>Poprawnych odpowiedzi: ${correctCells}/${totalCells} (${percentGuessed}%)</p>
+        <p>Poprawnych odpowiedzi za pierwszym razem: ${percentFirstTry}%</p>
+        <p>Największa passa poprawnych odpowiedzi: ${maxCorrectStreak}</p>
+        <p>Największa passa błędnych odpowiedzi: ${maxWrongStreak}</p>
+        <p>Błędy globalne: ${globalErrors}</p>
+        <p>Ilość użyć odkryj wybranych: ${usedDiscover}</p>
+        <p>Komórki z największą ilością błędów:<br>${topCells.length ? topCells.join("<br>") : "Brak błędów"}</p>
+        <p>Czas trwania quizu: ${timeUsed}</p>
+    `;
+    return statsHtml;
+}
+
+function showStatsOverlay(html){
+    let overlay = document.createElement("div");
+    overlay.id = "statsOverlay";
+    overlay.style.position = "fixed";
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.background = "rgba(0,0,0,0.8)";
+    overlay.style.color = "white";
+    overlay.style.padding = "20px";
+    overlay.style.overflowY = "auto";
+    overlay.style.zIndex = "10000";
+    overlay.innerHTML = `
+        <div style="max-width:600px; margin:50px auto; background:#222; padding:20px; border-radius:10px;">
+            ${html}
+            <button style="display:block; margin:20px auto; padding:10px 20px;" onclick="document.getElementById('statsOverlay').remove()">Kontynuuj</button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+}
+
+// ---- PATCH v6.1: stats + editor row/col ops + hints + comma answers ----
+function armHintMode(){
+    hintModeArmed = true;
+    discoverMode = false;
+    renewMode = false;
+    updateCellClickHandlers();
+    alert("Tryb podpowiedzi aktywny. Kliknij jedna komorke z inputem.");
+}
+
+startQuiz = function(){
+    quizStartTime = Date.now();
+    if(!tableData.length){ alert("Najpierw wczytaj lub stworz tabele."); return; }
+    if(!mode){ alert("Wybierz tryb!"); return; }
+
+    savedConfig = {
+        mode: mode,
+        fixedCount: parseInt(document.getElementById("fixedCount").value)||2,
+        maxGlobal: parseInt(document.getElementById("maxTries").value)||-1,
+        maxCell: parseInt(document.getElementById("cellTries").value)||-1,
+        tableState: JSON.parse(JSON.stringify(tableData)),
+        extraText: document.getElementById("extraText").value || "",
+        cellStates: getMarkMap(),
+        manualSelectMode: manualSelectMode
+    };
+
+    globalTries = 0;
+    maxGlobalExceeded = false;
+    discoverMode = false;
+    renewMode = false;
+    hintModeArmed = false;
+    manualSelectMode = false;
+
+    let quizData = JSON.parse(JSON.stringify(tableData));
+    if(document.getElementById("shuffleRows").checked){
+        quizData.sort(()=>0.5 - Math.random());
+    }
+
+    let html = "<table>";
+    quizData.forEach((row,r)=>{
+        html += "<tr>";
+        const indices = row.map((_,i)=>i);
+        let visible = [];
+        if(mode==="random"){
+            const candidate = indices.filter(i => (String(row[i] ?? "").trim() !== ""));
+            const cnt = Math.max(1, Math.min(candidate.length, Math.floor(Math.random()*3)+1));
+            visible = candidate.slice().sort(()=>0.5-Math.random()).slice(0,cnt);
+        } else if(mode==="fixed"){
+            const candidate = indices.filter(i => {
+                const value = String(row[i] ?? "").trim();
+                const st = savedConfig.cellStates[`${r}-${i}`] || {};
+                return value !== "" && !st.excludeFixed;
+            });
+            const cnt = Math.max(0, Math.min(candidate.length, savedConfig.fixedCount));
+            visible = candidate.slice().sort(()=>0.5-Math.random()).slice(0,cnt);
+        }
+
+        row.forEach((cell,c)=>{
+            const state = savedConfig.cellStates[`${r}-${c}`] || {info:false,fixed:false};
+            let tdClass="", content="", quizInput="0";
+            if(state.info){ tdClass="info"; content = cell; }
+            else if((mode==="manual" && state.fixed) || visible.includes(c)){ tdClass="fixed"; content = cell; }
+            else{
+                quizInput = "1";
+                const options = parseAnswerOptions(cell).join("|");
+                content = `<input data-answer="${cell}" data-options="${options}" data-tries="0" data-maxtries="${savedConfig.maxCell}" onkeydown="checkInput(event,this)">`;
+            }
+            html += `<td class="${tdClass}" data-r="${r}" data-c="${c}" data-answer="${cell}" data-tries="0" data-correct="${quizInput==="1"?"0":"1"}" data-firsttry="${quizInput==="1"?"0":"1"}" data-quizinput="${quizInput}">${content}</td>`;
+        });
+        html += "</tr>";
+    });
+    html += "</table>";
+    document.getElementById("tableContainer").innerHTML = html;
+
+    document.querySelectorAll("#tableContainer td").forEach(td => {
+        if(!td.dataset.answer || td.dataset.answer.trim() === ""){
+            td.style.background = "black";
+            td.style.color = "white";
+            td.innerHTML = "";
+            td.onclick = null;
+        }
+    });
+
+    document.getElementById("extraTextDisplay").textContent = savedConfig.extraText;
+    document.getElementById("extraTextDisplay").style.display = savedConfig.extraText ? "block" : "none";
+    document.getElementById("extraText").style.display = "none";
+    document.getElementById("quizControls").style.display = "block";
+    document.getElementById("controls").style.display = "none";
+    updateCellClickHandlers();
+    setupAutoEnter();
+
+    const timeLimit = parseInt(document.getElementById("timeLimit").value);
+    if(!isNaN(timeLimit) && timeLimit > 0) startTimer(timeLimit);
+};
+
+checkInput = function(e,input){
+    if(e.key!=="Enter") return;
+    const td = input.parentElement;
+    const val = normalize(input.value);
+    const options = (input.dataset.options || "").split("|").filter(Boolean);
+    const isCorrect = options.includes(val);
+
+    if(isCorrect){
+        const tries = parseInt(td.dataset.tries || "0");
+        td.dataset.correct = "1";
+        td.dataset.firsttry = tries===0 ? "1" : "0";
+        td.classList.add("correct");
+        td.textContent = input.dataset.answer; // pokaz pełną wartość, np. "żyć, mieszkać"
+        return;
+    }
+
+    let tries = parseInt(input.dataset.tries)||0;
+    let maxCell = parseInt(input.dataset.maxtries)||-1;
+    let maxGlobal = savedConfig.maxGlobal;
+    input.dataset.tries = tries+1;
+    td.dataset.tries = (parseInt(td.dataset.tries||"0")+1);
+    td.dataset.correct = "0";
+    td.dataset.firsttry = "0";
+    globalTries++;
+
+    input.classList.add("wrong");
+    setTimeout(()=>{
+        input.classList.remove("wrong");
+        if(document.getElementById("autoClear").checked) input.value="";
+    },1200);
+
+    if(maxCell!==-1 && tries+1>=maxCell){
+        input.disabled=true;
+        td.classList.add("wrong");
+    }
+
+    if(maxGlobal !== -1 && globalTries>=maxGlobal && !maxGlobalExceeded){
+        maxGlobalExceeded = true;
+        alert("Przekroczono globalny limit bledow. Test konczy sie.");
+        showAll();
+        if(document.getElementById("showStatsCheckbox")?.checked){
+            showStatsOverlay(calculateStats());
+        }
+    }
+};
+
+showAll = function(){
+    document.querySelectorAll("#tableContainer td input").forEach(inp=>{
+        const td = inp.parentElement;
+        const val = normalize(inp.value);
+        const options = (inp.dataset.options || "").split("|").filter(Boolean);
+        const ok = options.includes(val);
+        td.dataset.correct = ok ? "1" : "0";
+        td.dataset.firsttry = ok && parseInt(td.dataset.tries||"0")===0 ? "1" : "0";
+        td.textContent = inp.dataset.answer;
+        if(ok) td.classList.add("correct");
+        else td.classList.add("wrong");
+    });
+};
+
+updateCellClickHandlers = function(){
+    document.querySelectorAll("#tableContainer td").forEach(td=>{
+        td.onclick = null;
+
+        if(manualSelectMode){
+            td.onclick = ()=> td.classList.toggle("fixed");
+            return;
+        }
+        if(mode==="info" && document.getElementById("controls").style.display!=="none"){
+            td.onclick = ()=> td.classList.toggle("info");
+            return;
+        }
+        if(mode==="excludeFixed" && document.getElementById("controls").style.display!=="none"){
+            td.onclick = ()=> td.classList.toggle("excludeFixed");
+            return;
+        }
+        if(hintModeArmed && td.querySelector("input")){
+            td.onclick = ()=>{
+                const input = td.querySelector("input");
+                const answer = input.dataset.answer || "";
+                const kind = prompt("1 = ilosc znakow + wyrazow, 2 = laczony (kwadraciki)", "1");
+                if(kind==="2"){
+                    const base = (answer.split(",")[0] || answer).trim();
+                    td.querySelectorAll(".hintCombined,.hintMeta").forEach(el=>el.remove());
+                    const wrap = document.createElement("div");
+                    wrap.className = "hintCombined";
+                    for(let i=0;i<base.length;i++){
+                        const ch = base[i];
+                        if(ch===" "){
+                            const gap = document.createElement("span");
+                            gap.className = "hintGap";
+                            wrap.appendChild(gap);
+                        } else {
+                            const sq = document.createElement("span");
+                            sq.className = "hintSquare";
+                            sq.onclick = ()=>{ sq.textContent = ch; };
+                            wrap.appendChild(sq);
+                        }
+                    }
+                    td.appendChild(wrap);
+                } else {
+                    const clean = answer.trim();
+                    const words = clean ? clean.split(/\s+/).filter(Boolean).length : 0;
+                    const chars = clean.length;
+                    td.querySelectorAll(".hintCombined,.hintMeta").forEach(el=>el.remove());
+                    const info = document.createElement("div");
+                    info.className = "hintMeta";
+                    info.textContent = `Znaki: ${chars}, wyrazy: ${words}`;
+                    td.appendChild(info);
+                }
+                hintModeArmed = false;
+                updateCellClickHandlers();
+            };
+            return;
+        }
+
+        if(discoverMode){
+            const inp = td.querySelector("input");
+            if(inp && !td.classList.contains("wrong")){
+                td.onclick = ()=> td.classList.toggle("toDiscover");
+            }
+        }
+
+        if(renewMode){
+            td.onclick = ()=>{
+                if(td.classList.contains("correct") || td.classList.contains("wrong") || td.classList.contains("discovered") || td.querySelector("input")){
+                    const answer = td.dataset.answer;
+                    const options = parseAnswerOptions(answer).join("|");
+                    td.classList.remove("correct","wrong","discovered","toDiscover");
+                    td.dataset.tries = "0";
+                    td.dataset.correct = "0";
+                    td.dataset.firsttry = "0";
+                    td.dataset.discovered = "0";
+                    td.dataset.quizinput = "1";
+                    td.innerHTML = `<input data-answer="${answer}" data-options="${options}" data-tries="0" data-maxtries="${savedConfig.maxCell||-1}" onkeydown="checkInput(event,this)">`;
+                    setupAutoEnter();
+                }
+            };
+        }
+    });
+};
+
+backToMenu = function(){
+    stopTimer();
+    tableData = JSON.parse(JSON.stringify(savedConfig.tableState || []));
+    renderTable(true);
+
+    const marks = savedConfig.cellStates || {};
+    document.querySelectorAll("#tableContainer td").forEach(td=>{
+        const s = marks[`${td.dataset.r}-${td.dataset.c}`];
+        if(!s) return;
+        if(s.info) td.classList.add("info");
+        if(savedConfig.mode==="manual" && s.fixed) td.classList.add("fixed");
+        if(s.excludeFixed) td.classList.add("excludeFixed");
+    });
+
+    manualSelectMode = savedConfig.manualSelectMode || false;
+    mode = savedConfig.mode || mode;
+    discoverMode = false;
+    renewMode = false;
+    hintModeArmed = false;
+
+    document.getElementById("extraText").value = savedConfig.extraText || "";
+    document.getElementById("extraText").style.display = "block";
+    document.getElementById("extraTextDisplay").style.display = "none";
+    document.getElementById("controls").style.display="block";
+    document.getElementById("quizControls").style.display="none";
+
+    if(document.getElementById("showStatsCheckbox")?.checked){
+        showStatsOverlay(calculateStats());
+    }
+};
+
+function openEditorWithData(data){
+    editorBuffer = JSON.parse(JSON.stringify(data));
+    editorMode = "select";
+    editorSelected = null;
+    renderEditorView();
+    document.getElementById("controls").style.display="none";
+}
+
+function renderEditorView(){
+    let html = `<div class="editorModeLabel">Tryb edycji: ${editorMode || "select"}</div>
+    <button class="btn btn-secondary" onclick="setEditorMode('add-col-left')">+ Kolumna lewo</button>
+    <button class="btn btn-secondary" onclick="setEditorMode('add-col-right')">+ Kolumna prawo</button>
+    <button class="btn btn-secondary" onclick="setEditorMode('add-row-up')">+ Wiersz gora</button>
+    <button class="btn btn-secondary" onclick="setEditorMode('add-row-down')">+ Wiersz dol</button>
+    <button class="btn btn-danger" onclick="setEditorMode('delete-col')">Usun kolumne</button>
+    <button class="btn btn-danger" onclick="setEditorMode('delete-row')">Usun wiersz</button>
+    <button class="btn btn-secondary" onclick="setEditorMode('select')">Wylacz tryb</button>`;
+    html += "<table>";
+    editorBuffer.forEach((row,r)=>{
+        html += "<tr>";
+        row.forEach((cell,c)=>{
+            const selected = editorSelected && editorSelected.r===r && editorSelected.c===c ? "editorSelected" : "";
+            html += `<td class="${selected}" data-r="${r}" data-c="${c}" onclick="editorCellClick(this)"><input id="cell_${r}_${c}" style="width:95%" value="${cell}"></td>`;
+        });
+        html += "</tr>";
+    });
+    html += "</table>";
+    html += `<button class="btn btn-main" onclick="saveEditedTable()">Zapisz tabelke</button>
+             <button class="btn btn-secondary" onclick="copyTableCode()">Kopiuj kod tabelki</button>
+             <button class="btn btn-danger" onclick="closeEditor()">Zamknij</button>`;
+    document.getElementById("tableContainer").innerHTML = html;
+}
+
+function syncEditorBuffer(){
+    const rows = document.querySelectorAll("#tableContainer tr");
+    const out = [];
+    rows.forEach(tr=>{
+        const row = [];
+        tr.querySelectorAll("input").forEach(inp=>row.push(inp.value));
+        if(row.length) out.push(row);
+    });
+    if(out.length) editorBuffer = out;
+}
+
+function setEditorMode(m){ editorMode = m; renderEditorView(); }
+
+function editorCellClick(td){
+    syncEditorBuffer();
+    const r = parseInt(td.dataset.r), c = parseInt(td.dataset.c);
+    editorSelected = {r,c};
+    const cols = editorBuffer[0]?.length || 1;
+
+    if(editorMode==="add-col-left" || editorMode==="add-col-right"){
+        const idx = editorMode==="add-col-left" ? c : c+1;
+        editorBuffer = editorBuffer.map(row=>{ const n=row.slice(); n.splice(idx,0,""); return n; });
+    } else if(editorMode==="add-row-up" || editorMode==="add-row-down"){
+        const idx = editorMode==="add-row-up" ? r : r+1;
+        editorBuffer.splice(idx,0,Array(cols).fill(""));
+    } else if(editorMode==="delete-col"){
+        if(cols<=1){ alert("Musi zostac min. 1 kolumna."); return; }
+        editorBuffer = editorBuffer.map(row=>{ const n=row.slice(); n.splice(c,1); return n; });
+    } else if(editorMode==="delete-row"){
+        if(editorBuffer.length<=1){ alert("Musi zostac min. 1 wiersz."); return; }
+        editorBuffer.splice(r,1);
+    }
+
+    renderEditorView();
+}
+
+createTable = function(){
+    let rows = parseInt(prompt("Podaj liczbe wierszy:"),10);
+    let cols = parseInt(prompt("Podaj liczbe kolumn:"),10);
+    if(!rows || !cols) return;
+    openEditorWithData(Array.from({length:rows},()=>Array(cols).fill("")));
+};
+
+editTable = function(){
+    if(tableData.length===0){ alert("Najpierw wczytaj tabele."); return; }
+    openEditorWithData(tableData);
+};
+
+saveEditedTable = function(){
+    syncEditorBuffer();
+    tableData = JSON.parse(JSON.stringify(editorBuffer));
+    editorBuffer = [];
+    renderTable(true);
+    document.getElementById("controls").style.display="block";
+};
+
+copyTableCode = function(){
+    const src = editorBuffer.length ? editorBuffer : tableData;
+    navigator.clipboard.writeText(src.map(row=>row.join("\t")).join("\n")).then(()=>alert("Skopiowano tabelke do schowka!"));
+};
+
+closeEditor = function(){
+    editorBuffer = [];
+    renderTable(true);
+    document.getElementById("controls").style.display="block";
+};
+
+calculateStats = function(){
+    const quizCells = Array.from(document.querySelectorAll("#tableContainer td[data-quizinput='1']"));
+    if(!quizCells.length) return "<p>Brak komorek quizowych do podsumowania.</p>";
+
+    let total = quizCells.length, correct = 0, firstTry = 0, errors = 0, usedDiscover = 0;
+    let maxGood=0,maxBad=0,curGood=0,curBad=0;
+    const errMap = [];
+
+    quizCells.forEach(td=>{
+        const ok = td.dataset.correct==="1" || td.classList.contains("correct");
+        const t = parseInt(td.dataset.tries||"0");
+        if(ok){ correct++; if((td.dataset.firsttry||"0")==="1") firstTry++; curGood++; curBad=0; if(curGood>maxGood) maxGood=curGood; }
+        else{ curBad++; curGood=0; if(curBad>maxBad) maxBad=curBad; }
+        errors += t;
+        if(t>0) errMap.push({k:`R${(parseInt(td.dataset.r||0)+1)}-C${(parseInt(td.dataset.c||0)+1)}`,v:t});
+        if(td.dataset.discovered==="1" || td.classList.contains("discovered")) usedDiscover++;
+    });
+
+    const top = errMap.sort((a,b)=>b.v-a.v).slice(0,3).map((x,i)=>`${i+1}. ${x.k} - ${x.v} bledow`);
+    const p1 = Math.round((correct/total)*100);
+    const p2 = Math.round((firstTry/total)*100);
+    const sec = Math.max(0,Math.floor((Date.now()-quizStartTime)/1000));
+    const tm = `${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}`;
+
+    return `<p>Poprawnych odpowiedzi: ${correct}/${total} (${p1}%)</p>
+            <p>Poprawnych za pierwszym razem: ${firstTry}/${total} (${p2}%)</p>
+            <p>Najwieksza passa poprawnych odpowiedzi: ${maxGood}</p>
+            <p>Najwieksza passa blednych odpowiedzi: ${maxBad}</p>
+            <p>Bledy globalne: ${errors}</p>
+            <p>Ilosc uzyc odkryj wybranych: ${usedDiscover}</p>
+            <p>Komorki z najwieksza iloscia bledow:<br>${top.length?top.join("<br>"):"Brak bledow"}</p>
+            <p>Czas trwania quizu: ${tm}</p>`;
+};
+
+function importTableData(data){
+    let cellsData = data.table || data;
+    if(Array.isArray(data.table) && Array.isArray(data.table[0])){
+        tableData = data.table;
+        renderTable(true);
+        if(Array.isArray(data.marks)){
+            data.marks.forEach(m=>{
+                const td = document.querySelector(`td[data-r="${m.r}"][data-c="${m.c}"]`);
+                if(!td) return;
+                if(m.info) td.classList.add("info");
+                if(m.fixed) td.classList.add("fixed");
+                if(m.excludeFixed) td.classList.add("excludeFixed");
+            });
+        }
+    } else {
+        tableData = [];
+        const rows = {};
+        cellsData.forEach(cell=>{
+            if(!rows[cell.r]) rows[cell.r]=[];
+            rows[cell.r][cell.c] = cell.value;
+        });
+        tableData = Object.values(rows);
+        renderTable(true);
+        cellsData.forEach(cell=>{
+            const td = document.querySelector(`td[data-r="${cell.r}"][data-c="${cell.c}"]`);
+            if(td){
+                td.className = cell.className || "";
+                td.innerHTML = cell.innerHTML || td.innerHTML;
+            }
+        });
+    }
+    document.getElementById("extraText").value = data.extraText || "";
+    updateCellClickHandlers();
+    document.getElementById("controls").style.display = "block";
+}
+
+importTable = function(file){
+    const reader = new FileReader();
+    reader.onload = function(e){
+        const data = JSON.parse(e.target.result);
+        importTableData(data);
+    };
+    reader.readAsText(file);
+};
+
+function parseTableInfoText(raw){
+    const out = { autor: "-", data: "-", opis: "-" };
+    if(!raw) return out;
+    try{
+        const j = JSON.parse(raw);
+        out.autor = j.autor || j.author || out.autor;
+        out.data = j.dataUtworzenia || j.data || j.date || out.data;
+        out.opis = j.opis || j.description || out.opis;
+        return out;
+    } catch(_) {}
+    raw.split(/\r?\n/).forEach(line=>{
+        const m = line.match(/^\s*([^:]+)\s*:\s*(.*)\s*$/);
+        if(!m) return;
+        const k = m[1].toLowerCase();
+        const v = m[2].trim();
+        if(k.includes("autor")) out.autor = v;
+        else if(k.includes("data")) out.data = v;
+        else if(k.includes("opis")) out.opis = v;
+    });
+    return out;
+}
+
+const DB_BASE_PATH = "bazatabelek/";
+const DB_TABLE_JSON = "tabelka.json";
+const DB_INFO_JSON = "tabelkainfo.json";
+
+async function openDbFilePicker(){
+    await showDbOverlay();
+}
+
+function getDirectoryLinksFromHtml(html){
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const out = [];
+    doc.querySelectorAll("a[href]").forEach(a=>{
+        const href = a.getAttribute("href") || "";
+        if(!href) return;
+        if(href === "../") return;
+        if(href.startsWith("?")) return;
+        if(href.startsWith("#")) return;
+        if(href.includes("..")) return;
+        if(!href.endsWith("/")) return;
+        out.push(href);
+    });
+    return Array.from(new Set(out));
+}
+
+async function showDbOverlay(){
+    const overlayId = "dbOverlay";
+    document.getElementById(overlayId)?.remove();
+    const overlay = document.createElement("div");
+    overlay.id = overlayId;
+    overlay.className = "dbOverlay";
+    overlay.innerHTML = `<div class="dbPanel">
+        <div style="display:flex; gap:8px; align-items:center;">
+            <h3 style="margin:0;">Baza tabelek (JSON)</h3>
+            <button class="btn btn-secondary" style="margin-left:auto;" onclick="showDbOverlay()">Odswiez</button>
+            <button class="btn btn-danger" onclick="document.getElementById('${overlayId}').remove()">Zamknij</button>
+        </div>
+        <div id="dbList" style="margin-top:10px;">Ladowanie...</div>
+    </div>`;
+    document.body.appendChild(overlay);
+
+    const list = document.getElementById("dbList");
+    let baseHtml = "";
+    try{
+        const res = await fetch(DB_BASE_PATH + "?t=" + Date.now());
+        if(!res.ok) throw new Error("Brak folderu");
+        baseHtml = await res.text();
+    } catch(_){
+        list.innerHTML = `Nie mozna odczytac folderu <b>${DB_BASE_PATH}</b>.<br>Upewnij sie, ze plik HTML jest uruchomiony z serwera i obok jest folder bazatabelek.`;
+        return;
+    }
+
+    const folders = getDirectoryLinksFromHtml(baseHtml);
+    if(!folders.length){
+        list.innerHTML = "Brak folderow tabelek w bazatabelek.";
+        return;
+    }
+
+    const items = [];
+    for(const folderHref of folders){
+        const folderName = folderHref.replace(/\/$/, "");
+        const base = DB_BASE_PATH + folderHref;
+        const jsonUrl = base + DB_TABLE_JSON;
+        const infoUrl = base + DB_INFO_JSON;
+
+        let hasTable = false;
+        try{
+            const head = await fetch(jsonUrl + "?t=" + Date.now(), { method: "HEAD" });
+            hasTable = head.ok;
+        } catch(_){ hasTable = false; }
+        if(!hasTable) continue;
+
+        let infoText = "";
+        try{
+            const r = await fetch(infoUrl + "?t=" + Date.now());
+            if(r.ok) infoText = await r.text();
+        } catch(_){}
+        const meta = parseTableInfoText(infoText);
+        items.push({ folder: folderName, jsonUrl, meta });
+    }
+
+    if(!items.length){
+        list.innerHTML = "Brak poprawnych wpisow w index.json.";
+        return;
+    }
+
+    list.innerHTML = items.map((x,i)=>`
+        <div class="dbItem">
+            <div><b>${x.folder}</b></div>
+            <div>Autor: ${x.meta.autor}</div>
+            <div>Data utworzenia: ${x.meta.data}</div>
+            <div>Opis: ${x.meta.opis}</div>
+            <button class="btn btn-main" onclick="loadDbItem(${i})">Wczytaj</button>
+        </div>
+    `).join("");
+    window.__dbItems = items;
+}
+
+async function loadDbItem(index){
+    const item = window.__dbItems?.[index];
+    if(!item) return;
+    try{
+        const res = await fetch(item.jsonUrl + "?t=" + Date.now());
+        if(!res.ok) throw new Error("json missing");
+        const data = await res.json();
+        importTableData(data);
+        document.getElementById("dbOverlay")?.remove();
+    } catch(_){
+        alert("Nie udalo sie wczytac pliku z bazy.");
+    }
+}
+
+// ---- PATCH v6.2 ----
+let ignoreWrongStreakStats = false;
+let hintOverlayState = { td: null, type: "1" };
+let dbBaseDirHandle = null;
+
+function getOriginalCellKey(td){
+    const r = td.dataset.origr ?? td.dataset.r;
+    const c = td.dataset.origc ?? td.dataset.c;
+    return `${r}-${c}`;
+}
+
+setMode = function(m){
+    mode = m;
+    manualSelectMode = false;
+    discoverMode = false;
+    renewMode = false;
+    hintModeArmed = false;
+    updateCellClickHandlers();
+    alert("Wybrano tryb: " + m);
+};
+
+toggleManualSelect = function(){
+    manualSelectMode = !manualSelectMode;
+    if(manualSelectMode) mode = "manual";
+    discoverMode = false;
+    renewMode = false;
+    hintModeArmed = false;
+    updateCellClickHandlers();
+    alert("Manualny tryb wyboru " + (manualSelectMode ? "włączony" : "wyłączony"));
+};
+
+createTimerOverlay = function(){
+    if(timerOverlay) timerOverlay.remove();
+    timerOverlay = document.createElement('div');
+    timerOverlay.className = 'timerOverlay locked';
+    timerOverlay.style.position = 'fixed';
+    timerOverlay.style.right = '20px';
+    timerOverlay.style.top = '80px';
+    timerOverlay.innerHTML = `<span id="timerText"></span><button class="lockBtn" id="timerLockBtn">🔒</button>`;
+    document.body.appendChild(timerOverlay);
+    timerLocked = true;
+
+    document.getElementById('timerLockBtn').addEventListener('click', ()=>{
+        timerLocked = !timerLocked;
+        timerOverlay.classList.toggle('locked', timerLocked);
+        document.getElementById('timerLockBtn').textContent = timerLocked ? '🔒' : '🔓';
+    });
+
+    timerOverlay.addEventListener('mousedown', (e)=>{
+        if(timerLocked) return;
+        dragState.active = true;
+        dragState.startX = e.clientX;
+        dragState.startY = e.clientY;
+        const rect = timerOverlay.getBoundingClientRect();
+        dragState.initLeft = rect.left;
+        dragState.initTop = rect.top;
+        e.preventDefault();
+    });
+    document.addEventListener('mousemove', (e)=>{
+        if(!dragState.active) return;
+        const left = dragState.initLeft + (e.clientX - dragState.startX);
+        const top = dragState.initTop + (e.clientY - dragState.startY);
+        timerOverlay.style.left = left + 'px';
+        timerOverlay.style.top = top + 'px';
+        timerOverlay.style.right = 'auto';
+        timerOverlay.style.position = 'fixed';
+    });
+    document.addEventListener('mouseup', ()=>{ dragState.active = false; });
+};
+
+editorCellClick = function(td){
+    syncEditorBuffer();
+    const r = parseInt(td.dataset.r), c = parseInt(td.dataset.c);
+    editorSelected = {r,c};
+    const cols = editorBuffer[0]?.length || 1;
+
+    if(editorMode === "select"){
+        return;
+    } else if(editorMode==="add-col-left" || editorMode==="add-col-right"){
+        const idx = editorMode==="add-col-left" ? c : c+1;
+        editorBuffer = editorBuffer.map(row=>{ const n=row.slice(); n.splice(idx,0,""); return n; });
+    } else if(editorMode==="add-row-up" || editorMode==="add-row-down"){
+        const idx = editorMode==="add-row-up" ? r : r+1;
+        editorBuffer.splice(idx,0,Array(cols).fill(""));
+    } else if(editorMode==="delete-col"){
+        if(cols<=1){ alert("Musi zostac min. 1 kolumna."); return; }
+        editorBuffer = editorBuffer.map(row=>{ const n=row.slice(); n.splice(c,1); return n; });
+    } else if(editorMode==="delete-row"){
+        if(editorBuffer.length<=1){ alert("Musi zostac min. 1 wiersz."); return; }
+        editorBuffer.splice(r,1);
+    }
+    renderEditorView();
+};
+
+function ensureHintBadge(td){
+    td.classList.add("hasHintBadge");
+    let btn = td.querySelector(".hintBadgeBtn");
+    if(btn) return;
+    btn = document.createElement("button");
+    btn.className = "hintBadgeBtn";
+    btn.textContent = "💡";
+    btn.onclick = (ev)=>{
+        ev.stopPropagation();
+        openHintOverlay(td, td.dataset.hintType || "1");
+    };
+    td.appendChild(btn);
+}
+
+function renderHintOverlay(){
+    const td = hintOverlayState.td;
+    if(!td) return;
+    const currentInput = td.querySelector("input");
+    const answer = (currentInput?.dataset.answer || td.dataset.answer || "").trim();
+    const type = hintOverlayState.type;
+    const container = document.getElementById("hintContent");
+    if(!container) return;
+
+    let html = "";
+    if(type === "2"){
+        const base = (answer.split(",")[0] || answer).trim();
+        html += `<div class="hintCombined" id="hintSquaresWrap"></div>`;
+        setTimeout(()=>{
+            const wrap = document.getElementById("hintSquaresWrap");
+            if(!wrap) return;
+            for(let i=0;i<base.length;i++){
+                const ch = base[i];
+                if(ch===" "){
+                    const gap = document.createElement("span");
+                    gap.className = "hintGap";
+                    wrap.appendChild(gap);
+                } else {
+                    const sq = document.createElement("span");
+                    sq.className = "hintSquare";
+                    sq.onclick = ()=>{ sq.textContent = ch; };
+                    wrap.appendChild(sq);
+                }
+            }
+        }, 0);
+    } else {
+        const words = answer ? answer.split(/\s+/).filter(Boolean).length : 0;
+        const chars = answer.length;
+        html += `<div class="hintMeta" style="font-size:15px;">Znaki: ${chars}, wyrazy: ${words}</div>`;
+    }
+    html += `<div style="margin-top:12px;">
+        <input id="hintAnswerInput" style="width:100%; padding:8px; border:1px solid #bbb;" placeholder="Wpisz odpowiedz tutaj">
+        <button class="btn btn-main" style="margin-top:8px;" onclick="applyHintAnswerToQuiz()">Wpisz do quizu i sprawdz</button>
+    </div>`;
+    container.innerHTML = html;
+}
+
+function openHintOverlay(td, forcedType){
+    hintOverlayState.td = td;
+    hintOverlayState.type = forcedType || "1";
+    td.dataset.hintType = hintOverlayState.type;
+    ensureHintBadge(td);
+
+    let overlay = document.getElementById("hintOverlay");
+    if(!overlay){
+        overlay = document.createElement("div");
+        overlay.id = "hintOverlay";
+        overlay.style.position = "fixed";
+        overlay.style.inset = "0";
+        overlay.style.background = "rgba(0,0,0,0.75)";
+        overlay.style.zIndex = "12000";
+        overlay.innerHTML = `
+            <div style="max-width:700px; margin:40px auto; background:#fff; border-radius:10px; padding:16px;">
+                <div style="display:flex; gap:8px; margin-bottom:8px;">
+                    <button class="btn btn-secondary" onclick="hintOverlayState.type='1'; renderHintOverlay();">Znaki + wyrazy</button>
+                    <button class="btn btn-secondary" onclick="hintOverlayState.type='2'; renderHintOverlay();">Laczony (kwadraciki)</button>
+                    <button class="btn btn-danger" style="margin-left:auto;" onclick="document.getElementById('hintOverlay').remove()">Zamknij</button>
+                </div>
+                <div id="hintContent"></div>
+            </div>`;
+        document.body.appendChild(overlay);
+    }
+    renderHintOverlay();
+}
+
+function applyHintAnswerToQuiz(){
+    const td = hintOverlayState.td;
+    if(!td) return;
+    const inp = td.querySelector("input");
+    const source = document.getElementById("hintAnswerInput");
+    if(!source) return;
+    if(inp){
+        inp.value = source.value;
+        checkInput({key:"Enter"}, inp);
+    }
+}
+
+armHintMode = function(){
+    hintModeArmed = true;
+    discoverMode = false;
+    renewMode = false;
+    manualSelectMode = false;
+    updateCellClickHandlers();
+    alert("Tryb podpowiedzi aktywny. Kliknij komorke z inputem.");
+};
+
+startQuiz = function(){
+    quizStartTime = Date.now();
+    ignoreWrongStreakStats = false;
+    if(!tableData.length){ alert("Najpierw wczytaj lub stworz tabele."); return; }
+    if(!mode){ alert("Wybierz tryb!"); return; }
+
+    const markMap = getMarkMap();
+    savedConfig = {
+        mode: mode,
+        fixedCount: parseInt(document.getElementById("fixedCount").value)||2,
+        maxGlobal: parseInt(document.getElementById("maxTries").value)||-1,
+        maxCell: parseInt(document.getElementById("cellTries").value)||-1,
+        tableState: JSON.parse(JSON.stringify(tableData)),
+        extraText: document.getElementById("extraText").value || "",
+        cellStates: markMap,
+        manualSelectMode: manualSelectMode
+    };
+
+    globalTries = 0;
+    maxGlobalExceeded = false;
+    discoverMode = false;
+    renewMode = false;
+    hintModeArmed = false;
+    manualSelectMode = false;
+
+    let quizRows = tableData.map((row, idx)=>({ row, origR: idx }));
+    if(document.getElementById("shuffleRows").checked){
+        quizRows.sort(()=>0.5 - Math.random());
+    }
+
+    let html = "<table>";
+    quizRows.forEach((rowObj,rView)=>{
+        html += "<tr>";
+        const row = rowObj.row;
+        const origR = rowObj.origR;
+        const indices = row.map((_,i)=>i);
+        let visible = [];
+
+        if(mode==="random"){
+            const candidate = indices.filter(i => String(row[i] ?? "").trim() !== "");
+            const cnt = Math.max(1, Math.min(candidate.length, Math.floor(Math.random()*3)+1));
+            visible = candidate.slice().sort(()=>0.5-Math.random()).slice(0,cnt);
+        } else if(mode==="fixed"){
+            const candidate = indices.filter(i => {
+                const value = String(row[i] ?? "").trim();
+                const st = markMap[`${origR}-${i}`] || {};
+                return value !== "" && !st.excludeFixed;
+            });
+            const cnt = Math.max(0, Math.min(candidate.length, savedConfig.fixedCount));
+            visible = candidate.slice().sort(()=>0.5-Math.random()).slice(0,cnt);
+        }
+
+        row.forEach((cell,c)=>{
+            const state = markMap[`${origR}-${c}`] || {info:false,fixed:false,excludeFixed:false};
+            let tdClass = state.excludeFixed ? "excludeFixed" : "";
+            let content = "";
+            let quizInput = "0";
+            if(state.info){ tdClass += (tdClass ? " " : "") + "info"; content = cell; }
+            else if((mode==="manual" && state.fixed) || visible.includes(c)){ tdClass += (tdClass ? " " : "") + "fixed"; content = cell; }
+            else{
+                quizInput = "1";
+                const options = parseAnswerOptions(cell).join("|");
+                content = `<input data-answer="${cell}" data-options="${options}" data-tries="0" data-maxtries="${savedConfig.maxCell}" onkeydown="checkInput(event,this)">`;
+            }
+            html += `<td class="${tdClass}" data-r="${rView}" data-c="${c}" data-origr="${origR}" data-origc="${c}" data-answer="${cell}" data-tries="0" data-correct="${quizInput==="1"?"0":"1"}" data-firsttry="${quizInput==="1"?"0":"1"}" data-quizinput="${quizInput}">${content}</td>`;
+        });
+        html += "</tr>";
+    });
+    html += "</table>";
+    document.getElementById("tableContainer").innerHTML = html;
+
+    document.querySelectorAll("#tableContainer td").forEach(td=>{
+        if(!td.dataset.answer || td.dataset.answer.trim()===""){
+            td.style.background = "black";
+            td.style.color = "white";
+            td.innerHTML = "";
+            td.onclick = null;
+        }
+    });
+
+    document.getElementById("extraTextDisplay").textContent = savedConfig.extraText;
+    document.getElementById("extraTextDisplay").style.display = savedConfig.extraText ? "block" : "none";
+    document.getElementById("extraText").style.display = "none";
+    document.getElementById("quizControls").style.display = "block";
+    document.getElementById("controls").style.display = "none";
+    updateCellClickHandlers();
+    setupAutoEnter();
+
+    const timeLimit = parseInt(document.getElementById("timeLimit").value);
+    if(!isNaN(timeLimit) && timeLimit > 0) startTimer(timeLimit);
+};
+
+updateCellClickHandlers = function(){
+    document.querySelectorAll("#tableContainer td").forEach(td=>{
+        td.onclick = null;
+
+        if(manualSelectMode){
+            td.onclick = ()=> td.classList.toggle("fixed");
+            return;
+        }
+        if(mode==="info" && document.getElementById("controls").style.display!=="none"){
+            td.onclick = ()=> td.classList.toggle("info");
+            return;
+        }
+        if(mode==="excludeFixed" && document.getElementById("controls").style.display!=="none"){
+            td.onclick = ()=> td.classList.toggle("excludeFixed");
+            return;
+        }
+        if(hintModeArmed && td.querySelector("input")){
+            td.onclick = ()=>{
+                hintModeArmed = false;
+                openHintOverlay(td, td.dataset.hintType || "1");
+                updateCellClickHandlers();
+            };
+            return;
+        }
+
+        if(discoverMode){
+            const inp = td.querySelector("input");
+            if(inp && !td.classList.contains("wrong")){
+                td.onclick = ()=> td.classList.toggle("toDiscover");
+                return;
+            }
+        }
+
+        if(renewMode){
+            td.onclick = ()=>{
+                if(td.classList.contains("correct") || td.classList.contains("wrong") || td.classList.contains("discovered") || td.querySelector("input")){
+                    const answer = td.dataset.answer;
+                    const options = parseAnswerOptions(answer).join("|");
+                    td.classList.remove("correct","wrong","discovered","toDiscover");
+                    td.dataset.tries = "0";
+                    td.dataset.correct = "0";
+                    td.dataset.firsttry = "0";
+                    td.dataset.discovered = "0";
+                    td.dataset.quizinput = "1";
+                    td.innerHTML = `<input data-answer="${answer}" data-options="${options}" data-tries="0" data-maxtries="${savedConfig.maxCell||-1}" onkeydown="checkInput(event,this)">`;
+                    setupAutoEnter();
+                }
+            };
+        }
+    });
+};
+
+showAll = function(){
+    ignoreWrongStreakStats = true;
+    document.querySelectorAll("#tableContainer td input").forEach(inp=>{
+        const td = inp.parentElement;
+        const val = normalize(inp.value);
+        const options = (inp.dataset.options || "").split("|").filter(Boolean);
+        const ok = options.includes(val);
+        td.dataset.correct = ok ? "1" : "0";
+        td.dataset.firsttry = ok && parseInt(td.dataset.tries||"0")===0 ? "1" : "0";
+        td.textContent = inp.dataset.answer;
+        if(ok) td.classList.add("correct");
+        else td.classList.add("wrong");
+    });
+};
+
+checkInput = function(e,input){
+    if(e.key!=="Enter") return;
+    const td = input.parentElement;
+    const val = normalize(input.value);
+    const options = (input.dataset.options || "").split("|").filter(Boolean);
+    const isCorrect = options.includes(val);
+
+    if(isCorrect){
+        const tries = parseInt(td.dataset.tries || "0");
+        td.dataset.correct = "1";
+        td.dataset.firsttry = tries===0 ? "1" : "0";
+        td.classList.add("correct");
+        td.textContent = input.dataset.answer;
+        return;
+    }
+
+    let tries = parseInt(input.dataset.tries)||0;
+    let maxCell = parseInt(input.dataset.maxtries)||-1;
+    let maxGlobal = savedConfig.maxGlobal;
+    input.dataset.tries = tries+1;
+    td.dataset.tries = (parseInt(td.dataset.tries||"0")+1);
+    td.dataset.correct = "0";
+    td.dataset.firsttry = "0";
+    globalTries++;
+
+    input.classList.add("wrong");
+    setTimeout(()=>{
+        input.classList.remove("wrong");
+        if(document.getElementById("autoClear").checked) input.value="";
+    },1200);
+
+    if(maxCell!==-1 && tries+1>=maxCell){
+        input.disabled=true;
+        td.classList.add("wrong");
+    }
+    if(maxGlobal !== -1 && globalTries>=maxGlobal && !maxGlobalExceeded){
+        maxGlobalExceeded = true;
+        alert("Przekroczono globalny limit bledow. Test konczy sie.");
+        showAll();
+        if(document.getElementById("showStatsCheckbox")?.checked) showStatsOverlay(calculateStats());
+    }
+};
+
+calculateStats = function(){
+    const quizCells = Array.from(document.querySelectorAll("#tableContainer td[data-quizinput='1']"));
+    if(!quizCells.length) return "<p>Brak komorek quizowych do podsumowania.</p>";
+
+    let total = quizCells.length, correct = 0, firstTry = 0, errors = 0, usedDiscover = 0;
+    let maxGood=0,maxBad=0,curGood=0,curBad=0;
+    const errMap = [];
+
+    quizCells.forEach(td=>{
+        const ok = td.dataset.correct==="1" || td.classList.contains("correct");
+        const t = parseInt(td.dataset.tries||"0");
+        if(ok){
+            correct++;
+            if((td.dataset.firsttry||"0")==="1") firstTry++;
+            curGood++; curBad=0; if(curGood>maxGood) maxGood=curGood;
+        } else if(!ignoreWrongStreakStats){
+            curBad++; curGood=0; if(curBad>maxBad) maxBad=curBad;
+        }
+        errors += t;
+        if(t>0){
+            const answerText = (td.dataset.answer || "").trim() || "(pusta)";
+            errMap.push({k:answerText,v:t});
+        }
+        if(td.dataset.discovered==="1" || td.classList.contains("discovered")) usedDiscover++;
+    });
+
+    if(ignoreWrongStreakStats) maxBad = 0;
+    const top = errMap
+        .sort((a,b)=>b.v-a.v)
+        .slice(0,3)
+        .map((x,i)=>`${i+1}. ${x.k} - ${x.v} bledow`);
+    const p1 = Math.round((correct/total)*100);
+    const p2 = Math.round((firstTry/total)*100);
+    const sec = Math.max(0,Math.floor((Date.now()-quizStartTime)/1000));
+    const tm = `${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}`;
+
+    return `<p>Poprawnych odpowiedzi: ${correct}/${total} (${p1}%)</p>
+            <p>Poprawnych za pierwszym razem: ${firstTry}/${total} (${p2}%)</p>
+            <p>Najwieksza passa poprawnych odpowiedzi: ${maxGood}</p>
+            <p>Najwieksza passa blednych odpowiedzi: ${maxBad}</p>
+            <p>Bledy globalne: ${errors}</p>
+            <p>Ilosc uzyc odkryj wybranych: ${usedDiscover}</p>
+            <p>Komorki z najwieksza iloscia bledow:<br>${top.length?top.join("<br>"):"Brak bledow"}</p>
+            <p>Czas trwania quizu: ${tm}</p>`;
+};
+
+</script>
+
+</body>
+</html>
