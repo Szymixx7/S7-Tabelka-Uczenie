@@ -84,30 +84,36 @@ td:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px rgba(19,183,
     isolation: isolate;
     overflow: hidden;
     color: #fff;
-    background: var(--glass);
-    backdrop-filter: blur(10px);
+    background:
+        linear-gradient(165deg, rgba(255,255,255,0.24), rgba(255,255,255,0.06) 55%),
+        var(--glass);
+    backdrop-filter: saturate(170%) blur(14px);
+    -webkit-backdrop-filter: saturate(170%) blur(14px);
     transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
 }
 .btn::before {
     content: "";
     position: absolute;
-    inset: -120%;
-    background: conic-gradient(from 0deg, transparent 0deg, rgba(255,255,255,0.0) 140deg, rgba(255,255,255,0.55) 180deg, rgba(255,255,255,0) 220deg, transparent 360deg);
-    animation: spinRing 3.8s linear infinite;
-    opacity: .6;
-    z-index: -2;
+    left: 8%;
+    right: 8%;
+    top: -45%;
+    height: 80%;
+    border-radius: 999px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.65), rgba(255,255,255,0));
+    opacity: .55;
+    pointer-events: none;
 }
 .btn::after {
     content: "";
     position: absolute;
-    inset: 1px;
+    inset: 0;
     border-radius: 10px;
-    background: rgba(10, 19, 36, 0.72);
-    z-index: -1;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.38), inset 0 -10px 30px rgba(0,0,0,0.15);
+    pointer-events: none;
 }
 .btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0,0,0,.28), 0 0 18px rgba(19,183,255,.34);
+    box-shadow: 0 8px 24px rgba(0,0,0,.22), 0 0 18px rgba(19,183,255,.28);
     border-color: rgba(255, 255, 255, 0.4);
 }
 .btn-main { box-shadow: 0 0 14px rgba(19,183,255,0.25); }
@@ -117,6 +123,136 @@ td:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px rgba(19,183,
     border-color: rgba(105,229,255,0.95);
     box-shadow: 0 0 0 1px rgba(105,229,255,0.55), 0 0 20px rgba(19,183,255,0.6), 0 8px 24px rgba(0,0,0,.35);
     transform: translateY(-1px);
+}
+.topTools { display:flex; justify-content:flex-end; margin-bottom:10px; }
+.quizCellSelected { outline: 2px solid #ffe66d !important; box-shadow: inset 0 0 0 1px rgba(255,230,109,0.75), 0 0 16px rgba(255,230,109,0.45); }
+.settingsBtn {
+    width: 100%;
+    margin: 0;
+    padding: 12px 14px;
+    text-align: center;
+    font-size: 15px;
+}
+.settingsStack {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+}
+.settingsSelect {
+    width: 100%;
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--glass);
+    color: var(--text);
+    backdrop-filter: saturate(170%) blur(10px);
+}
+.settingsSelect option {
+    color: #111;
+    background: #fff;
+}
+.settingsLabel {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 4px 0 2px;
+}
+.shortcutMask {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.58);
+    z-index: 12550;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 14px;
+}
+.shortcutMaskBox {
+    max-width: 620px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: rgba(10, 18, 34, 0.94);
+    padding: 14px;
+}
+body.theme-black {
+    --bg-1: #050505;
+    --bg-2: #151515;
+    --glass: rgba(255, 255, 255, 0.05);
+    --line: rgba(255, 255, 255, 0.14);
+    --text: #eceff5;
+    --muted: #b9c0cc;
+    background:
+        radial-gradient(900px 500px at 8% -10%, rgba(255,255,255,0.08), transparent 60%),
+        linear-gradient(150deg, var(--bg-1), var(--bg-2));
+}
+body.theme-white {
+    --bg-1: #f7f9ff;
+    --bg-2: #e9eef7;
+    --glass: rgba(255, 255, 255, 0.85);
+    --line: rgba(16, 24, 40, 0.2);
+    --text: #1a2335;
+    --muted: #34425f;
+    --main: #0b72ff;
+    --danger: #e0466b;
+    --secondary: #5a76d8;
+    background:
+        radial-gradient(900px 500px at 8% -10%, rgba(11,114,255,0.12), transparent 60%),
+        linear-gradient(150deg, var(--bg-1), var(--bg-2));
+}
+body.theme-white .btn {
+    color: #1a2335;
+    border-color: rgba(16, 24, 40, 0.25);
+}
+body.theme-white .btn-danger {
+    color: #fff;
+}
+body.theme-white .timerOverlay .lockBtn {
+    color: #1a2335;
+}
+body.theme-purple {
+    --bg-1: #223e84;
+    --bg-2: #6f3a8a;
+    --glass: rgba(255, 255, 255, 0.09);
+    --line: rgba(255, 255, 255, 0.18);
+    --text: #f2eefe;
+    --muted: #d2c5f6;
+    background:
+        radial-gradient(900px 500px at 8% -10%, rgba(108,207,255,0.33), transparent 60%),
+        radial-gradient(900px 500px at 95% -5%, rgba(255,138,236,0.3), transparent 58%),
+        linear-gradient(150deg, var(--bg-1), var(--bg-2));
+}
+body.no-liquid .btn::before,
+body.no-liquid .btn::after { display: none; }
+body.no-liquid .btn {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.26);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+#settingsOverlay .dbPanel,
+#shortcutsOverlay .dbPanel,
+#styleOverlay .dbPanel {
+    background: var(--glass) !important;
+    border-color: var(--line) !important;
+    color: var(--text) !important;
+    backdrop-filter: saturate(170%) blur(14px);
+    -webkit-backdrop-filter: saturate(170%) blur(14px);
+}
+#hintOverlay > div,
+#statsOverlay > div {
+    background: var(--glass) !important;
+    border: 1px solid var(--line) !important;
+    color: var(--text) !important;
+    backdrop-filter: saturate(170%) blur(14px);
+    -webkit-backdrop-filter: saturate(170%) blur(14px);
+}
+#hintOverlay,
+#statsOverlay,
+#settingsOverlay,
+#shortcutsOverlay,
+#styleOverlay {
+    color: var(--text) !important;
 }
 @keyframes spinRing { to { transform: rotate(360deg); } }
 #controls {
@@ -196,6 +332,9 @@ input[type="checkbox"] { accent-color: #58d8ff; }
 <body>
 
 <h2>Trening Słówek z Tabelki by Szymix7👑 v6</h2>
+<div class="topTools">
+<button id="bugBtn" class="btn btn-secondary" onclick="openSettingsOverlay()" title="Ustawienia" aria-label="Ustawienia">⚙️</button>
+</div>
 
 <textarea id="inputArea" placeholder="Wklej tabelkę z Worda..."></textarea><br>
 <button class="btn btn-main" onclick="convertTable()">Konwertuj</button>
@@ -250,6 +389,7 @@ Limit czasu (sekundy): <input type="number" id="timeLimit" value="-1" style="wid
 <button id="renewModeBtn" class="btn btn-secondary" onclick="enterRenewMode()">Odnów wybrane</button>
 <button id="hintModeBtn" class="btn btn-secondary" onclick="armHintMode()">Podpowiedź (1 klik)</button>
 <button class="btn btn-secondary" onclick="showAll()">Pokaż wszystko</button>
+<button id="endQuizBtn" class="btn btn-danger" onclick="endQuiz()">Zakończ test</button>
 <button id="backBtn" class="btn btn-secondary" onclick="backToMenu()" style="display:inline-block;">Wróć</button>
 </div>
 
@@ -2428,6 +2568,382 @@ calculateStats = function(){
 };
 
 document.addEventListener("DOMContentLoaded", refreshModeIndicators);
+
+// ---- PATCH v6.3: end test + settings + shortcuts + no-hint stats ----
+let selectedQuizCell = null;
+let lastQuizCell = null;
+let hoveredQuizCell = null;
+let backtickHeld = false;
+let editorShortcutMode = null;
+const UI_PREFS_KEY = "tabelka_ui_prefs_v1";
+let uiPrefs = { theme: "default", liquid: true };
+
+function applyUiPrefs(){
+    document.body.classList.remove("theme-black","theme-white","theme-purple","no-liquid");
+    if(uiPrefs.theme === "black") document.body.classList.add("theme-black");
+    else if(uiPrefs.theme === "white") document.body.classList.add("theme-white");
+    else if(uiPrefs.theme === "purple") document.body.classList.add("theme-purple");
+    if(!uiPrefs.liquid) document.body.classList.add("no-liquid");
+}
+
+function saveUiPrefs(){
+    try { localStorage.setItem(UI_PREFS_KEY, JSON.stringify(uiPrefs)); } catch(_){}
+}
+
+function loadUiPrefs(){
+    try{
+        const raw = localStorage.getItem(UI_PREFS_KEY);
+        if(!raw) return;
+        const obj = JSON.parse(raw);
+        if(obj && typeof obj === "object"){
+            if(["default","black","white","purple"].includes(obj.theme)) uiPrefs.theme = obj.theme;
+            if(typeof obj.liquid === "boolean") uiPrefs.liquid = obj.liquid;
+        }
+    } catch(_){}
+}
+
+function setTheme(theme){
+    uiPrefs.theme = theme;
+    applyUiPrefs();
+    saveUiPrefs();
+}
+
+function setLiquidButtons(enabled){
+    uiPrefs.liquid = !!enabled;
+    applyUiPrefs();
+    saveUiPrefs();
+}
+
+endQuiz = function(){
+    showAll();
+    if(document.getElementById("showStatsCheckbox")?.checked){
+        showStatsOverlay(calculateStats());
+    }
+};
+
+function isQuizActive(){
+    return document.getElementById("quizControls")?.style.display !== "none" &&
+           document.getElementById("controls")?.style.display === "none";
+}
+
+function isEditorActive(){
+    return !!document.querySelector("#tableContainer .editorModeLabel");
+}
+
+function setSelectedQuizCell(td){
+    if(selectedQuizCell && selectedQuizCell !== td) selectedQuizCell.classList.remove("quizCellSelected");
+    selectedQuizCell = td || null;
+    if(selectedQuizCell) selectedQuizCell.classList.add("quizCellSelected");
+}
+
+function clearSelectedQuizCell(){
+    if(selectedQuizCell){
+        selectedQuizCell.classList.remove("quizCellSelected");
+        selectedQuizCell = null;
+    }
+}
+
+function getSelectedQuizCell(){
+    if(hoveredQuizCell && hoveredQuizCell.isConnected && hoveredQuizCell.dataset.quizinput === "1"){
+        setSelectedQuizCell(hoveredQuizCell);
+        return hoveredQuizCell;
+    }
+    if(selectedQuizCell && selectedQuizCell.isConnected && selectedQuizCell.querySelector("input")) return selectedQuizCell;
+    const fallback = document.querySelector("#tableContainer td[data-quizinput='1'] input")?.parentElement || null;
+    if(fallback) setSelectedQuizCell(fallback);
+    return fallback;
+}
+
+function revealSingleCell(td){
+    if(!td || !td.querySelector("input")) return;
+    td.textContent = td.dataset.answer || "";
+    td.classList.add("discovered");
+    td.dataset.discovered = "1";
+    td.classList.remove("quizCellSelected");
+    selectedQuizCell = null;
+}
+
+function resetSingleCell(td){
+    if(!td) return;
+    const answer = td.dataset.answer || "";
+    if(!answer) return;
+    const options = parseAnswerOptions(answer).join("|");
+    td.classList.remove("correct","wrong","discovered","toDiscover","quizCellSelected");
+    td.dataset.tries = "0";
+    td.dataset.correct = "0";
+    td.dataset.firsttry = "0";
+    td.dataset.discovered = "0";
+    td.dataset.quizinput = "1";
+    td.dataset.hintActive = "0";
+    td.dataset.hintUsed = "0";
+    td.classList.remove("hasHintBadge");
+    td.innerHTML = `<input data-answer="${answer}" data-options="${options}" data-tries="0" data-maxtries="${savedConfig.maxCell||-1}" onkeydown="checkInput(event,this)">`;
+    setupAutoEnter();
+    selectedQuizCell = null;
+}
+
+openSettingsOverlay = function(){
+    if(document.getElementById("settingsOverlay")) return;
+    const overlay = document.createElement("div");
+    overlay.id = "settingsOverlay";
+    overlay.className = "dbOverlay";
+    overlay.innerHTML = `
+        <div class="dbPanel" style="max-width:680px; margin:10vh auto;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <h3 style="margin:0;">Ustawienia</h3>
+                <button class="btn btn-danger" style="margin-left:auto;" onclick="document.getElementById('settingsOverlay').remove()">Zamknij</button>
+            </div>
+            <div class="settingsStack">
+                <button class="btn btn-secondary settingsBtn" onclick="openShortcutsOverlay()">Skróty klawiszowe (podgląd)</button>
+                <button class="btn btn-secondary settingsBtn" onclick="openStyleOverlay()">Styl</button>
+            </div>
+        </div>`;
+    document.body.appendChild(overlay);
+};
+
+openShortcutsOverlay = function(){
+    if(document.getElementById("shortcutsOverlay")) return;
+    const overlay = document.createElement("div");
+    overlay.id = "shortcutsOverlay";
+    overlay.className = "dbOverlay";
+    overlay.innerHTML = `
+        <div class="dbPanel" style="max-width:760px; margin:10vh auto;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <h3 style="margin:0;">Skróty klawiszowe</h3>
+                <button class="btn btn-danger" style="margin-left:auto;" onclick="document.getElementById('shortcutsOverlay').remove()">Zamknij</button>
+            </div>
+            <div style="margin-top:10px;">
+                <p><b>W Quizie</b></p>
+                <p>\` + P - włącza podpowiedź dla zaznaczonej komórki</p>
+                <p>\` + O - odkrywa komórkę</p>
+                <p>\` + R - resetuje komórkę</p>
+                <p><b>W Edytorze Tabeli</b></p>
+                <p>\` + K - panel kolumn (L/P/U)</p>
+                <p>\` + W - panel wierszy (G/D/U)</p>
+                <p>\` + N - wyłącza tryb</p>
+                <p>\` + A - anuluje panel skrótów</p>
+            </div>
+        </div>`;
+    document.body.appendChild(overlay);
+};
+
+openStyleOverlay = function(){
+    if(document.getElementById("styleOverlay")) return;
+    const overlay = document.createElement("div");
+    overlay.id = "styleOverlay";
+    overlay.className = "dbOverlay";
+    overlay.innerHTML = `
+        <div class="dbPanel" style="max-width:680px; margin:10vh auto;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <h3 style="margin:0;">Styl strony</h3>
+                <button class="btn btn-danger" style="margin-left:auto;" onclick="document.getElementById('styleOverlay').remove()">Zamknij</button>
+            </div>
+            <div class="settingsStack">
+                <div class="settingsLabel">Kolor strony</div>
+                <select id="themeSelect" class="settingsSelect" onchange="setTheme(this.value)">
+                    <option value="default">Domyślny</option>
+                    <option value="black">Czarny</option>
+                    <option value="white">Biały</option>
+                    <option value="purple">Niebiesko-różowy gradient</option>
+                </select>
+                <div class="settingsLabel">Efekt przycisków</div>
+                <select id="liquidSelect" class="settingsSelect" onchange="setLiquidButtons(this.value==='on')">
+                    <option value="on">Liquid Glass (iPhone)</option>
+                    <option value="off">Bez Liquid Glass</option>
+                </select>
+            </div>
+        </div>`;
+    document.body.appendChild(overlay);
+    const themeSelect = document.getElementById("themeSelect");
+    const liquidSelect = document.getElementById("liquidSelect");
+    if(themeSelect) themeSelect.value = uiPrefs.theme || "default";
+    if(liquidSelect) liquidSelect.value = uiPrefs.liquid ? "on" : "off";
+};
+
+function showEditorShortcutMask(mode){
+    hideEditorShortcutMask();
+    editorShortcutMode = mode;
+    const div = document.createElement("div");
+    div.id = "editorShortcutMask";
+    div.className = "shortcutMask";
+    const txt = mode === "col"
+        ? "Aby anulować kliknij ` + A<br>Możliwe podopcje kolumn: L (lewa), P (prawa), U (usuń)"
+        : "Aby anulować kliknij ` + A<br>Możliwe podopcje wierszy: G (góra), D (dół), U (usuń)";
+    div.innerHTML = `<div class="shortcutMaskBox"><b>Tryb skrótów edytora aktywny</b><br><br>${txt}</div>`;
+    document.body.appendChild(div);
+}
+
+function hideEditorShortcutMask(){
+    document.getElementById("editorShortcutMask")?.remove();
+    editorShortcutMode = null;
+}
+
+const __oldRenderHintInCell = renderHintInCell;
+renderHintInCell = function(td, type){
+    __oldRenderHintInCell(td, type);
+    td?.querySelectorAll(".hintSquare").forEach(sq=>{
+        const old = sq.onclick;
+        sq.onclick = (ev)=>{ ev.stopPropagation(); if(typeof old === "function") old(ev); };
+    });
+};
+
+const __oldApplyHintTypeToCell = applyHintTypeToCell;
+applyHintTypeToCell = function(td, type){
+    __oldApplyHintTypeToCell(td, type);
+    if(td){
+        td.dataset.hintUsed = "1";
+        td.dataset.hintActive = "1";
+    }
+};
+
+const __oldStartQuiz = startQuiz;
+startQuiz = function(){
+    __oldStartQuiz();
+    document.querySelectorAll("#tableContainer td[data-quizinput='1']").forEach(td=>{
+        td.dataset.hintUsed = "0";
+    });
+};
+
+const __oldUpdateCellClickHandlers = updateCellClickHandlers;
+updateCellClickHandlers = function(){
+    __oldUpdateCellClickHandlers();
+    document.querySelectorAll("#tableContainer td").forEach(td=>{
+        const old = td.onclick;
+        td.onclick = (ev)=>{
+            if(td.querySelector("input")){
+                lastQuizCell = td;
+                if(backtickHeld) setSelectedQuizCell(td);
+            }
+            if(typeof old === "function") old.call(td, ev);
+        };
+    });
+};
+
+const __oldCalculateStats = calculateStats;
+calculateStats = function(){
+    const quizCells = Array.from(document.querySelectorAll("#tableContainer td[data-quizinput='1']"));
+    if(!quizCells.length) return __oldCalculateStats();
+
+    let total = quizCells.length, correct = 0, firstTry = 0, errors = 0, usedDiscover = 0;
+    let noHintTotal = 0, noHintCorrect = 0;
+    let maxGood=0,maxBad=0,curGood=0,curBad=0;
+    const errMap = [];
+
+    quizCells.forEach(td=>{
+        const ok = td.dataset.correct==="1" || td.classList.contains("correct");
+        const t = parseInt(td.dataset.tries||"0");
+        if(ok){
+            correct++;
+            if((td.dataset.firsttry||"0")==="1") firstTry++;
+            curGood++; curBad=0; if(curGood>maxGood) maxGood=curGood;
+        } else if(!ignoreWrongStreakStats){
+            curBad++; curGood=0; if(curBad>maxBad) maxBad=curBad;
+        }
+        errors += t;
+        if(t>0){
+            const answerText = (td.dataset.answer || "").trim() || "(pusta)";
+            errMap.push({k:answerText,v:t});
+        }
+        if(td.dataset.discovered==="1" || td.classList.contains("discovered")) usedDiscover++;
+        if(td.dataset.hintUsed !== "1"){
+            noHintTotal++;
+            if(ok) noHintCorrect++;
+        }
+    });
+
+    if(ignoreWrongStreakStats) maxBad = 0;
+    const top = errMap.sort((a,b)=>b.v-a.v).slice(0,3).map((x,i)=>`${i+1}. ${x.k} - ${x.v} bledow`);
+    const p1 = Math.round((correct/total)*100);
+    const p2 = Math.round((firstTry/total)*100);
+    const pNoHint = noHintTotal ? Math.round((noHintCorrect/noHintTotal)*100) : 0;
+    const sec = Math.max(0,Math.floor((Date.now()-quizStartTime)/1000));
+    const tm = `${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}`;
+
+    return `<p>Poprawnych odpowiedzi: ${correct}/${total} (${p1}%)</p>
+            <p>Poprawnych za pierwszym razem: ${firstTry}/${total} (${p2}%)</p>
+            <p>Skuteczność bez podpowiedzi: ${noHintCorrect}/${noHintTotal} (${pNoHint}%)</p>
+            <p>Najwieksza passa poprawnych odpowiedzi: ${maxGood}</p>
+            <p>Najwieksza passa blednych odpowiedzi: ${maxBad}</p>
+            <p>Bledy globalne: ${errors}</p>
+            <p>Ilosc uzyc odkryj wybranych: ${usedDiscover}</p>
+            <p>Komorki z najwieksza iloscia bledow:<br>${top.length?top.join("<br>"):"Brak bledow"}</p>
+            <p>Czas trwania quizu: ${tm}</p>`;
+};
+
+function handleGlobalShortcuts(e){
+    if(e.code === "Backquote" || e.key === "`"){
+        backtickHeld = true;
+        if(hoveredQuizCell && hoveredQuizCell.isConnected && hoveredQuizCell.dataset.quizinput === "1"){
+            setSelectedQuizCell(hoveredQuizCell);
+        } else if(lastQuizCell && lastQuizCell.isConnected && lastQuizCell.querySelector("input")){
+            setSelectedQuizCell(lastQuizCell);
+        }
+        e.preventDefault();
+        return;
+    }
+    if(!backtickHeld) return;
+    const key = String(e.key||"").toLowerCase();
+    if(!key) return;
+
+    if(isQuizActive()){
+        if(key === "p"){ const td = getSelectedQuizCell(); if(td) applyHintTypeToCell(td, td.dataset.hintType || "1"); e.preventDefault(); return; }
+        if(key === "o"){ revealSingleCell(getSelectedQuizCell()); e.preventDefault(); return; }
+        if(key === "r"){ resetSingleCell(getSelectedQuizCell()); e.preventDefault(); return; }
+    }
+
+    if(isEditorActive()){
+        if(key === "a"){ hideEditorShortcutMask(); e.preventDefault(); return; }
+        if(key === "n"){ hideEditorShortcutMask(); setEditorMode("select"); e.preventDefault(); return; }
+        if(key === "k"){ showEditorShortcutMask("col"); e.preventDefault(); return; }
+        if(key === "w"){ showEditorShortcutMask("row"); e.preventDefault(); return; }
+        if(editorShortcutMode === "col"){
+            if(key === "l"){ setEditorMode("add-col-left"); hideEditorShortcutMask(); e.preventDefault(); return; }
+            if(key === "p"){ setEditorMode("add-col-right"); hideEditorShortcutMask(); e.preventDefault(); return; }
+            if(key === "u"){ setEditorMode("delete-col"); hideEditorShortcutMask(); e.preventDefault(); return; }
+        }
+        if(editorShortcutMode === "row"){
+            if(key === "g"){ setEditorMode("add-row-up"); hideEditorShortcutMask(); e.preventDefault(); return; }
+            if(key === "d"){ setEditorMode("add-row-down"); hideEditorShortcutMask(); e.preventDefault(); return; }
+            if(key === "u"){ setEditorMode("delete-row"); hideEditorShortcutMask(); e.preventDefault(); return; }
+        }
+    }
+}
+
+document.addEventListener("keydown", handleGlobalShortcuts);
+document.addEventListener("mousemove", (e)=>{
+    if(!isQuizActive()) return;
+    const td = e.target.closest("#tableContainer td[data-quizinput='1']");
+    hoveredQuizCell = td || null;
+    if(backtickHeld){
+        if(hoveredQuizCell) setSelectedQuizCell(hoveredQuizCell);
+        else clearSelectedQuizCell();
+    }
+});
+document.addEventListener("keyup", (e)=>{
+    if(e.code === "Backquote" || e.key === "`"){
+        backtickHeld = false;
+        clearSelectedQuizCell();
+    }
+});
+
+const __oldBackToMenu = backToMenu;
+backToMenu = function(){
+    hideEditorShortcutMask();
+    clearSelectedQuizCell();
+    hoveredQuizCell = null;
+    __oldBackToMenu();
+};
+
+const __oldClearAll = clearAll;
+clearAll = function(){
+    hideEditorShortcutMask();
+    clearSelectedQuizCell();
+    hoveredQuizCell = null;
+    __oldClearAll();
+};
+
+loadUiPrefs();
+applyUiPrefs();
 
 </script>
 
