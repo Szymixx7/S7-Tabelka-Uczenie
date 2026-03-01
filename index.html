@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>Trening Słówek z Tabelki by Szymix7👑 v7</title>
+<title>Trening Słówek z Tabelki by Szymix7👑 v7.1</title>
 <style>
 :root {
     --bg-1: #091425;
@@ -331,7 +331,7 @@ input[type="checkbox"] { accent-color: #58d8ff; }
 </head>
 <body>
 
-<h2>Trening Słówek z Tabelki by Szymix7👑 v7</h2>
+<h2>Trening Słówek z Tabelki by Szymix7👑 v7.1</h2>
 <div class="topTools">
 <button id="bugBtn" class="btn btn-secondary" onclick="openSettingsOverlay()" title="Ustawienia" aria-label="Ustawienia">⚙️</button>
 </div>
@@ -483,11 +483,10 @@ function toggleCell(td){
     else if(markMode==="excludeFixed") td.classList.toggle("excludeFixed");
 }
 
-function setMode(m){ mode=m; alert("Wybrano tryb: "+m); }
+function setMode(m){ mode=m; }
 
 function toggleManualSelect(){
     manualSelectMode = !manualSelectMode;
-    alert("Manualny tryb wyboru " + (manualSelectMode ? "włączony" : "wyłączony"));
     updateCellClickHandlers();
 }
 
@@ -2077,7 +2076,6 @@ setMode = function(m){
     hintModeArmed = false;
     refreshModeIndicators();
     updateCellClickHandlers();
-    alert("Wybrano tryb: " + m);
 };
 
 toggleManualSelect = function(){
@@ -2088,7 +2086,6 @@ toggleManualSelect = function(){
     hintModeArmed = false;
     refreshModeIndicators();
     updateCellClickHandlers();
-    alert("Manualny tryb wyboru " + (manualSelectMode ? "włączony" : "wyłączony"));
 };
 
 createTimerOverlay = function(){
@@ -2575,6 +2572,7 @@ let lastQuizCell = null;
 let hoveredQuizCell = null;
 let backtickHeld = false;
 let editorShortcutMode = null;
+let quizHintShortcutMode = false;
 const UI_PREFS_KEY = "tabelka_ui_prefs_v1";
 let uiPrefs = { theme: "default", liquid: true };
 
@@ -2714,7 +2712,9 @@ openShortcutsOverlay = function(){
             </div>
             <div style="margin-top:10px;">
                 <p><b>W Quizie</b></p>
-                <p>\` + P - włącza podpowiedź dla zaznaczonej komórki</p>
+                <p>\` + P - otwiera panel skrótów podpowiedzi</p>
+                <p>\` + W - podpowiedź wyrazowa (po panelu)</p>
+                <p>\` + K - podpowiedź kwadracikowa (po panelu)</p>
                 <p>\` + O - odkrywa komórkę</p>
                 <p>\` + R - resetuje komórkę</p>
                 <p><b>W Edytorze Tabeli</b></p>
@@ -2776,6 +2776,22 @@ function showEditorShortcutMask(mode){
 function hideEditorShortcutMask(){
     document.getElementById("editorShortcutMask")?.remove();
     editorShortcutMode = null;
+}
+
+function showQuizHintShortcutMask(){
+    hideQuizHintShortcutMask();
+    if(!isQuizActive()) return;
+    quizHintShortcutMode = true;
+    const div = document.createElement("div");
+    div.id = "quizHintShortcutMask";
+    div.className = "shortcutMask";
+    div.innerHTML = `<div class="shortcutMaskBox"><b>Podpowiedzi - skróty aktywne</b><br><br>Aby anulować kliknij \` + A<br>Wybierz typ: \` + W (wyrazowa) albo \` + K (kwadracikowa)</div>`;
+    document.body.appendChild(div);
+}
+
+function hideQuizHintShortcutMask(){
+    document.getElementById("quizHintShortcutMask")?.remove();
+    quizHintShortcutMode = false;
 }
 
 const __oldRenderHintInCell = renderHintInCell;
@@ -2886,7 +2902,12 @@ function handleGlobalShortcuts(e){
     if(!key) return;
 
     if(isQuizActive()){
-        if(key === "p"){ const td = getSelectedQuizCell(); if(td) applyHintTypeToCell(td, td.dataset.hintType || "1"); e.preventDefault(); return; }
+        if(key === "p"){ showQuizHintShortcutMask(); e.preventDefault(); return; }
+        if(quizHintShortcutMode){
+            if(key === "w"){ const td = getSelectedQuizCell(); if(td) applyHintTypeToCell(td, "1"); hideQuizHintShortcutMask(); e.preventDefault(); return; }
+            if(key === "k"){ const td = getSelectedQuizCell(); if(td) applyHintTypeToCell(td, "2"); hideQuizHintShortcutMask(); e.preventDefault(); return; }
+            if(key === "a"){ hideQuizHintShortcutMask(); e.preventDefault(); return; }
+        }
         if(key === "o"){ revealSingleCell(getSelectedQuizCell()); e.preventDefault(); return; }
         if(key === "r"){ resetSingleCell(getSelectedQuizCell()); e.preventDefault(); return; }
     }
@@ -2929,6 +2950,7 @@ document.addEventListener("keyup", (e)=>{
 const __oldBackToMenu = backToMenu;
 backToMenu = function(){
     hideEditorShortcutMask();
+    hideQuizHintShortcutMask();
     clearSelectedQuizCell();
     hoveredQuizCell = null;
     __oldBackToMenu();
@@ -2937,6 +2959,7 @@ backToMenu = function(){
 const __oldClearAll = clearAll;
 clearAll = function(){
     hideEditorShortcutMask();
+    hideQuizHintShortcutMask();
     clearSelectedQuizCell();
     hoveredQuizCell = null;
     __oldClearAll();
