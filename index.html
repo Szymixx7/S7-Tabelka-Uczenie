@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>Trening Słówek z Tabelki by Szymix7👑 v7.1</title>
+<title>Trening Słówek z Tabelki by Szymix7👑 v7.2</title>
 <style>
 :root {
     --bg-1: #091425;
@@ -15,6 +15,11 @@
     --main: #13b7ff;
     --danger: #ff4d7d;
     --secondary: #8aa2ff;
+    --cell-fixed-bg: rgba(255, 170, 35, 0.75);
+    --cell-info-bg: rgba(255, 98, 177, 0.68);
+    --cell-exclude-bar: #ffd400;
+    --cell-select-outline: #70ddff;
+    --cell-empty-bg: #000000;
 }
 * { box-sizing: border-box; }
 body {
@@ -68,12 +73,13 @@ td, th {
     transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
 }
 td:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px rgba(19,183,255,0.35); }
-.fixed { background: rgba(255, 170, 35, 0.75) !important; color: #fff; }
-.info { background: rgba(255, 98, 177, 0.68) !important; }
+.emptyCell { background: var(--cell-empty-bg) !important; color: #fff !important; }
+.fixed { background: var(--cell-fixed-bg) !important; color: #fff; }
+.info { background: var(--cell-info-bg) !important; }
 .discovered { background: rgba(81, 175, 255, 0.7) !important; }
 .correct { background: rgba(68, 211, 142, 0.75) !important; }
 .wrong { background: rgba(255, 91, 91, 0.78) !important; }
-.toDiscover { outline: 2px solid #70ddff; }
+.toDiscover { outline: 2px solid var(--cell-select-outline); }
 .btn {
     margin: 5px;
     padding: 9px 14px;
@@ -119,6 +125,12 @@ td:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px rgba(19,183,
 .btn-main { box-shadow: 0 0 14px rgba(19,183,255,0.25); }
 .btn-danger { box-shadow: 0 0 14px rgba(255,77,125,0.3); }
 .btn-secondary { box-shadow: 0 0 14px rgba(138,162,255,0.28); }
+.btn-toggle-on {
+    background: rgba(68, 211, 142, 0.78) !important;
+    border-color: rgba(68, 211, 142, 0.95) !important;
+    box-shadow: 0 0 14px rgba(68, 211, 142, 0.45) !important;
+    color: #fff !important;
+}
 .btn.active {
     border-color: rgba(105,229,255,0.95);
     box-shadow: 0 0 0 1px rgba(105,229,255,0.55), 0 0 20px rgba(19,183,255,0.6), 0 8px 24px rgba(0,0,0,.35);
@@ -156,6 +168,56 @@ td:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px rgba(19,183,
     font-size: 13px;
     color: var(--muted);
     margin: 4px 0 2px;
+}
+.colorRow {
+    display: grid;
+    grid-template-columns: 46px 1fr auto auto;
+    gap: 10px;
+    align-items: center;
+}
+.colorPickerInput {
+    width: 46px;
+    height: 36px;
+    padding: 2px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: transparent;
+}
+.alphaSlider {
+    width: 100%;
+    accent-color: #5fdcff;
+}
+.colorPreviewBadge {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+}
+.infoIconBtn {
+    width: 28px;
+    min-width: 28px;
+    padding: 5px 0;
+    margin: 5px 2px 5px 0;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 13px;
+}
+.rowSelectItem {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px;
+    margin: 6px 0;
+    cursor: pointer;
+    user-select: none;
+    word-break: break-word;
+}
+.rowSelectItem.on {
+    background: rgba(68, 211, 142, 0.72);
+    color: #fff;
+}
+.rowSelectItem.off {
+    background: rgba(255,255,255,0.05);
+    color: var(--text);
 }
 .shortcutMask {
     position: fixed;
@@ -263,6 +325,22 @@ body.no-liquid .btn {
     background: var(--glass);
     backdrop-filter: blur(10px);
 }
+.siteFooter {
+    margin-top: 22px;
+    padding: 12px 10px 18px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+}
+.siteFooter a {
+    color: var(--text);
+}
+.siteFooter img {
+    max-width: 1em;
+    max-height: 1em;
+    margin-left: .2em;
+    vertical-align: -0.12em;
+}
 #extraText { height: 90px; margin-top: 10px; }
 #extraTextDisplay {
     white-space: pre-wrap;
@@ -296,7 +374,8 @@ body.no-liquid .btn {
 .hintCombined { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
 .hintSquare { width: 18px; height: 18px; border: 1px solid #333; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #0b1221; cursor: pointer; background: #fff; }
 .hintGap { width: 14px; height: 18px; display: inline-block; }
-.excludeFixed { box-shadow: inset -6px 0 0 #ffd400; }
+.excludeFixed { box-shadow: inset -6px 0 0 var(--cell-exclude-bar); }
+td.excludeFixed:hover { box-shadow: inset -6px 0 0 var(--cell-exclude-bar), inset 0 0 0 1px rgba(19,183,255,0.35); }
 .hintBadgeBtn { position:absolute; right:2px; top:2px; width:16px; height:16px; border:none; border-radius:3px; background:#ffd400; cursor:pointer; font-size:11px; line-height:16px; padding:0; }
 td.hasHintBadge { position: relative; padding-right: 20px; }
 .dbOverlay { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:13000; overflow:auto; }
@@ -331,7 +410,7 @@ input[type="checkbox"] { accent-color: #58d8ff; }
 </head>
 <body>
 
-<h2>Trening Słówek z Tabelki by Szymix7👑 v7.1</h2>
+<h2>Trening Słówek z Tabelki by Szymix7👑 v7.2</h2>
 <div class="topTools">
 <button id="bugBtn" class="btn btn-secondary" onclick="openSettingsOverlay()" title="Ustawienia" aria-label="Ustawienia">⚙️</button>
 </div>
@@ -363,10 +442,12 @@ input[type="checkbox"] { accent-color: #58d8ff; }
 
 <div id="controls" style="display:none;">
 <p>Opcje:</p>
+<button class="btn btn-secondary infoIconBtn" onclick="openModeInfoOverlay('quiz')" title="Info o trybach">ℹ️</button>
+<button id="modeManualBtn" class="btn btn-secondary" onclick="setMode('manual')">Manualne</button>
 <button id="modeRandomBtn" class="btn btn-secondary" onclick="setMode('random')">Losowe</button>
 <button id="modeFixedBtn" class="btn btn-secondary" onclick="setMode('fixed')">Losowe wartościowe</button>
-<input type="number" id="fixedCount" value="-1" style="width:60px; display:inline-block; margin-left:10px;" title="Ile komórek na linijkę zakryć"><br><br>
-<button id="modeManualBtn" class="btn btn-secondary" onclick="setMode('manual')">Manualne</button>
+<input type="number" id="fixedCount" value="1" style="width:60px; display:inline-block; margin-left:10px;" title="Ile komórek na linijkę zakryć"><br><br>
+<button class="btn btn-secondary infoIconBtn" onclick="openModeInfoOverlay('marks')" title="Info o zaznaczaniu">ℹ️</button>
 <button id="modeInfoBtn" class="btn btn-secondary" onclick="setMode('info')">Zaznaczanie informacyjne</button>
 <button id="modeExcludeFixedBtn" class="btn btn-secondary" onclick="setMode('excludeFixed')">Ignoruj w losowe wartościowe</button>
 <button id="manualSelectBtn" class="btn btn-secondary" onclick="toggleManualSelect()">Manualny tryb wyboru</button><br><br>
@@ -374,6 +455,15 @@ input[type="checkbox"] { accent-color: #58d8ff; }
 Globalna liczba prób: <input type="number" id="maxTries" value="-1" style="width:60px;"> (-1 = brak limitu)<br>
 Ilość prób na komórkę: <input type="number" id="cellTries" value="-1" style="width:60px;"> (-1 = brak limitu)<br>
 Limit czasu (sekundy): <input type="number" id="timeLimit" value="-1" style="width:80px;"> (-1 lub 0 = brak limitu)<br><br>
+Dopuszczalna literówka:
+<select id="typoTolerance" style="width:90px; margin-left:6px;">
+  <option value="0" selected>Brak</option>
+  <option value="1">1</option>
+  <option value="2">2</option>
+  <option value="3">3</option>
+</select><br><br>
+<button id="selectedRowsToggleBtn" class="btn btn-danger" onclick="toggleSelectedRowsMode()">Wybrane wiersze</button>
+<button id="selectedRowsPickBtn" class="btn btn-secondary" style="display:none;" onclick="openRowPickerOverlay()">Wybierz</button><br><br>
 
 <button class="btn btn-main" onclick="startQuiz()">Start</button>
 </div>
@@ -393,6 +483,18 @@ Limit czasu (sekundy): <input type="number" id="timeLimit" value="-1" style="wid
 <button id="backBtn" class="btn btn-secondary" onclick="backToMenu()" style="display:inline-block;">Wróć</button>
 </div>
 
+<footer class="siteFooter">
+  <a href="https://szymixx7.github.io/S7-Tabelka-Uczenie/" target="_blank" rel="noopener noreferrer">S7 Tabelka Uczenie</a>
+  © 2025 by
+  <a href="https://instagram.com/xszymon7/" target="_blank" rel="noopener noreferrer">Szymix7</a>
+  jest objęty licencją
+  <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="license noopener noreferrer">CC BY-NC-ND 4.0</a>
+  <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="CC">
+  <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="BY">
+  <img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="NC">
+  <img src="https://mirrors.creativecommons.org/presskit/icons/nd.svg" alt="ND">
+</footer>
+
 <script>
 let tableData = [];
 let mode = null;
@@ -405,6 +507,8 @@ let discoverMode = false;
 let renewMode = false;
 let manualSelectMode = false;
 let hintModeArmed = false;
+let selectedRowsMode = false;
+let selectedRowsSet = new Set();
 let editorMode = null;
 let editorSelected = null;
 let editorBuffer = [];
@@ -437,6 +541,124 @@ function normalize(str){
 function parseAnswerOptions(answer){
     const raw = (answer || "").split(",").map(v => normalize(v)).filter(Boolean);
     return raw.length ? raw : [normalize(answer || "")];
+}
+
+function levenshteinDistance(a, b){
+    const s = String(a || "");
+    const t = String(b || "");
+    const m = s.length, n = t.length;
+    if(!m) return n;
+    if(!n) return m;
+    const dp = Array.from({length: m + 1}, () => Array(n + 1).fill(0));
+    for(let i = 0; i <= m; i++) dp[i][0] = i;
+    for(let j = 0; j <= n; j++) dp[0][j] = j;
+    for(let i = 1; i <= m; i++){
+        for(let j = 1; j <= n; j++){
+            const cost = s[i - 1] === t[j - 1] ? 0 : 1;
+            dp[i][j] = Math.min(
+                dp[i - 1][j] + 1,
+                dp[i][j - 1] + 1,
+                dp[i - 1][j - 1] + cost
+            );
+        }
+    }
+    return dp[m][n];
+}
+
+function isAnswerAccepted(userValue, options){
+    const val = normalize(userValue);
+    const opts = Array.isArray(options) ? options : [];
+    if(val === "") return false;
+    const tol = Math.max(0, Math.min(3, parseInt(document.getElementById("typoTolerance")?.value || "0", 10) || 0));
+    if(opts.includes(val)) return true;
+    if(tol === 0) return false;
+    return opts.some(opt => levenshteinDistance(val, opt) <= tol);
+}
+
+function ensureSelectedRowsState(){
+    const rowCount = Array.isArray(tableData) ? tableData.length : 0;
+    const cleaned = new Set();
+    selectedRowsSet.forEach(v=>{
+        const n = parseInt(v, 10);
+        if(!Number.isNaN(n) && n >= 0 && n < rowCount) cleaned.add(n);
+    });
+    selectedRowsSet = cleaned;
+}
+
+function refreshSelectedRowsUi(){
+    const toggleBtn = document.getElementById("selectedRowsToggleBtn");
+    const pickBtn = document.getElementById("selectedRowsPickBtn");
+    if(toggleBtn){
+        toggleBtn.classList.remove("btn-main");
+        toggleBtn.classList.toggle("btn-danger", !selectedRowsMode);
+        toggleBtn.classList.toggle("btn-toggle-on", !!selectedRowsMode);
+    }
+    if(pickBtn){
+        pickBtn.style.display = selectedRowsMode ? "inline-block" : "none";
+    }
+}
+
+function toggleSelectedRowsMode(){
+    selectedRowsMode = !selectedRowsMode;
+    ensureSelectedRowsState();
+    if(selectedRowsMode && selectedRowsSet.size === 0 && tableData.length){
+        for(let i=0; i<tableData.length; i++) selectedRowsSet.add(i);
+    }
+    refreshSelectedRowsUi();
+}
+
+function renderRowPickerList(){
+    const wrap = document.getElementById("rowPickerList");
+    if(!wrap) return;
+    ensureSelectedRowsState();
+    if(!tableData.length){
+        wrap.innerHTML = "<div>Brak danych tabeli.</div>";
+        return;
+    }
+    wrap.innerHTML = tableData.map((row, idx)=>{
+        const on = selectedRowsSet.has(idx);
+        const rowText = row.map(v => String(v ?? "").trim() === "" ? "(pusta)" : String(v)).join(" | ");
+        return `<div class="rowSelectItem ${on ? "on" : "off"}" onclick="toggleRowSelection(${idx})"><b>Wiersz ${idx + 1}</b><br>${rowText}</div>`;
+    }).join("");
+}
+
+function toggleRowSelection(index){
+    const i = parseInt(index, 10);
+    if(Number.isNaN(i)) return;
+    if(selectedRowsSet.has(i)) selectedRowsSet.delete(i);
+    else selectedRowsSet.add(i);
+    renderRowPickerList();
+}
+
+function selectAllRows(){
+    selectedRowsSet = new Set();
+    for(let i=0; i<tableData.length; i++) selectedRowsSet.add(i);
+    renderRowPickerList();
+}
+
+function deselectAllRows(){
+    selectedRowsSet = new Set();
+    renderRowPickerList();
+}
+
+function openRowPickerOverlay(){
+    ensureSelectedRowsState();
+    document.getElementById("rowPickerOverlay")?.remove();
+    const overlay = document.createElement("div");
+    overlay.id = "rowPickerOverlay";
+    overlay.className = "dbOverlay";
+    overlay.innerHTML = `
+        <div class="dbPanel" style="max-width:1100px; margin:4vh auto;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <h3 style="margin:0;">Wybrane wiersze</h3>
+                <button class="btn btn-secondary" onclick="selectAllRows()">Zaznacz wszystkie</button>
+                <button class="btn btn-secondary" onclick="deselectAllRows()">Odznacz wszystkie</button>
+                <button class="btn btn-danger" style="margin-left:auto;" onclick="document.getElementById('rowPickerOverlay').remove()">Zamknij</button>
+            </div>
+            <div id="rowPickerList" style="margin-top:10px; max-height:70vh; overflow:auto;"></div>
+        </div>`;
+    document.body.appendChild(overlay);
+    renderRowPickerList();
 }
 
 function getMarkMap(){
@@ -491,6 +713,7 @@ function toggleManualSelect(){
 }
 
 let quizStartTime = 0;
+let quizEndTime = null;
 
 function startQuiz(){
     quizStartTime = Date.now();
@@ -622,6 +845,7 @@ function startTimer(seconds){
         timerRemaining--;
         updateTimerOverlay();
         if(timerRemaining <= 0){
+            if(!quizEndTime) quizEndTime = Date.now();
     	    stopTimer();
     	    alert("Czas minął! Odpowiedzi zostaną odkryte.");
     	    showAll(); // zamiast ustawiać wszystkim na wrong
@@ -1379,7 +1603,7 @@ checkInput = function(e,input){
     const td = input.parentElement;
     const val = normalize(input.value);
     const options = (input.dataset.options || "").split("|").filter(Boolean);
-    const isCorrect = options.includes(val);
+    const isCorrect = isAnswerAccepted(val, options);
 
     if(isCorrect){
         const tries = parseInt(td.dataset.tries || "0");
@@ -1652,7 +1876,7 @@ closeEditor = function(){
 
 calculateStats = function(){
     const quizCells = Array.from(document.querySelectorAll("#tableContainer td[data-quizinput='1']"));
-    if(!quizCells.length) return "<p>Brak komorek quizowych do podsumowania.</p>";
+    if(!quizCells.length) return "<p>Poprawnych odpowiedzi: 0/0 (0%)</p>";
 
     let total = quizCells.length, correct = 0, firstTry = 0, errors = 0, usedDiscover = 0;
     let maxGood=0,maxBad=0,curGood=0,curBad=0;
@@ -2297,6 +2521,7 @@ armHintMode = function(){
 
 startQuiz = function(){
     quizStartTime = Date.now();
+    quizEndTime = null;
     ignoreWrongStreakStats = false;
     if(!tableData.length){ alert("Najpierw wczytaj lub stworz tabele."); return; }
     if(!mode){ alert("Wybierz tryb!"); return; }
@@ -2323,6 +2548,14 @@ startQuiz = function(){
     refreshModeIndicators();
 
     let quizRows = tableData.map((row, idx)=>({ row, origR: idx }));
+    ensureSelectedRowsState();
+    if(selectedRowsMode){
+        quizRows = quizRows.filter(x => selectedRowsSet.has(x.origR));
+        if(!quizRows.length){
+            alert("Nie wybrano żadnego wiersza do quizu. Kliknij 'Wybierz' i zaznacz co najmniej jeden.");
+            return;
+        }
+    }
     const isFullInfoRow = (row, origR) => {
         const nonEmpty = row
             .map((cell, c)=>({ cell: String(cell ?? "").trim(), c }))
@@ -2386,8 +2619,10 @@ startQuiz = function(){
 
     document.querySelectorAll("#tableContainer td").forEach(td=>{
         if(!td.dataset.answer || td.dataset.answer.trim()===""){
-            td.style.background = "black";
-            td.style.color = "white";
+            td.classList.add("emptyCell");
+            td.dataset.quizinput = "0";
+            td.dataset.correct = "1";
+            td.dataset.firsttry = "1";
             td.innerHTML = "";
             td.onclick = null;
         }
@@ -2466,7 +2701,7 @@ showAll = function(){
         const td = inp.parentElement;
         const val = normalize(inp.value);
         const options = (inp.dataset.options || "").split("|").filter(Boolean);
-        const ok = options.includes(val);
+        const ok = isAnswerAccepted(val, options);
         td.dataset.correct = ok ? "1" : "0";
         td.dataset.firsttry = ok && parseInt(td.dataset.tries||"0")===0 ? "1" : "0";
         td.textContent = inp.dataset.answer;
@@ -2480,7 +2715,7 @@ checkInput = function(e,input){
     const td = input.parentElement;
     const val = normalize(input.value);
     const options = (input.dataset.options || "").split("|").filter(Boolean);
-    const isCorrect = options.includes(val);
+    const isCorrect = isAnswerAccepted(val, options);
 
     if(isCorrect){
         const tries = parseInt(td.dataset.tries || "0");
@@ -2511,6 +2746,7 @@ checkInput = function(e,input){
         td.classList.add("wrong");
     }
     if(maxGlobal !== -1 && globalTries>=maxGlobal && !maxGlobalExceeded){
+        if(!quizEndTime) quizEndTime = Date.now();
         maxGlobalExceeded = true;
         alert("Przekroczono globalny limit bledow. Test konczy sie.");
         showAll();
@@ -2520,7 +2756,7 @@ checkInput = function(e,input){
 
 calculateStats = function(){
     const quizCells = Array.from(document.querySelectorAll("#tableContainer td[data-quizinput='1']"));
-    if(!quizCells.length) return "<p>Brak komorek quizowych do podsumowania.</p>";
+    if(!quizCells.length) return "<p>Poprawnych odpowiedzi: 0/0 (0%)</p>";
 
     let total = quizCells.length, correct = 0, firstTry = 0, errors = 0, usedDiscover = 0;
     let maxGood=0,maxBad=0,curGood=0,curBad=0;
@@ -2574,7 +2810,16 @@ let backtickHeld = false;
 let editorShortcutMode = null;
 let quizHintShortcutMode = false;
 const UI_PREFS_KEY = "tabelka_ui_prefs_v1";
+const MARK_COLORS_KEY = "tabelka_mark_colors_v1";
 let uiPrefs = { theme: "default", liquid: true };
+const markColorDefaults = {
+    fixed: "rgba(255, 170, 35, 0.75)",
+    info: "rgba(255, 98, 177, 0.68)",
+    exclude: "#ffd400",
+    select: "#70ddff",
+    empty: "rgba(0, 0, 0, 0.8)"
+};
+let markColors = { ...markColorDefaults };
 
 function applyUiPrefs(){
     document.body.classList.remove("theme-black","theme-white","theme-purple","no-liquid");
@@ -2582,6 +2827,35 @@ function applyUiPrefs(){
     else if(uiPrefs.theme === "white") document.body.classList.add("theme-white");
     else if(uiPrefs.theme === "purple") document.body.classList.add("theme-purple");
     if(!uiPrefs.liquid) document.body.classList.add("no-liquid");
+}
+
+function applyMarkColors(){
+    const rs = document.documentElement.style;
+    rs.setProperty("--cell-fixed-bg", markColors.fixed);
+    rs.setProperty("--cell-info-bg", markColors.info);
+    rs.setProperty("--cell-exclude-bar", markColors.exclude);
+    rs.setProperty("--cell-select-outline", markColors.select);
+    rs.setProperty("--cell-empty-bg", markColors.empty);
+}
+
+function saveMarkColors(){
+    try { localStorage.setItem(MARK_COLORS_KEY, JSON.stringify(markColors)); } catch(_){}
+}
+
+function loadMarkColors(){
+    try{
+        const raw = localStorage.getItem(MARK_COLORS_KEY);
+        if(!raw) return;
+        const obj = JSON.parse(raw);
+        if(!obj || typeof obj !== "object") return;
+        markColors = {
+            fixed: String(obj.fixed || markColorDefaults.fixed),
+            info: String(obj.info || markColorDefaults.info),
+            exclude: String(obj.exclude || markColorDefaults.exclude),
+            select: String(obj.select || markColorDefaults.select),
+            empty: String(obj.empty || markColorDefaults.empty)
+        };
+    } catch(_){}
 }
 
 function saveUiPrefs(){
@@ -2613,6 +2887,7 @@ function setLiquidButtons(enabled){
 }
 
 endQuiz = function(){
+    if(!quizEndTime) quizEndTime = Date.now();
     showAll();
     if(document.getElementById("showStatsCheckbox")?.checked){
         showStatsOverlay(calculateStats());
@@ -2680,6 +2955,13 @@ function resetSingleCell(td){
     selectedQuizCell = null;
 }
 
+function refreshEmptyCells(){
+    document.querySelectorAll("#tableContainer td[data-answer]").forEach(td=>{
+        const v = String(td.dataset.answer || "").trim();
+        td.classList.toggle("emptyCell", v === "");
+    });
+}
+
 openSettingsOverlay = function(){
     if(document.getElementById("settingsOverlay")) return;
     const overlay = document.createElement("div");
@@ -2693,6 +2975,7 @@ openSettingsOverlay = function(){
             </div>
             <div class="settingsStack">
                 <button class="btn btn-secondary settingsBtn" onclick="openShortcutsOverlay()">Skróty klawiszowe (podgląd)</button>
+                <button class="btn btn-secondary settingsBtn" onclick="openCustomColorsOverlay()">Customowe kolory komórek zaznaczeniowych</button>
                 <button class="btn btn-secondary settingsBtn" onclick="openStyleOverlay()">Styl</button>
             </div>
         </div>`;
@@ -2760,6 +3043,159 @@ openStyleOverlay = function(){
     if(liquidSelect) liquidSelect.value = uiPrefs.liquid ? "on" : "off";
 };
 
+function syncMarkColorInputs(){
+    updateColorControl("fixed", markColors.fixed);
+    updateColorControl("info", markColors.info);
+    updateColorControl("exclude", markColors.exclude);
+    updateColorControl("select", markColors.select);
+    updateColorControl("empty", markColors.empty);
+}
+
+function parseCssColorToRgba(value){
+    const probe = document.createElement("span");
+    probe.style.color = value;
+    probe.style.display = "none";
+    document.body.appendChild(probe);
+    const computed = getComputedStyle(probe).color;
+    probe.remove();
+    const m = String(computed).match(/rgba?\(([^)]+)\)/i);
+    if(!m) return { r: 255, g: 255, b: 255, a: 1 };
+    const parts = m[1].split(",").map(v=>v.trim());
+    const r = Math.max(0, Math.min(255, parseInt(parts[0],10) || 0));
+    const g = Math.max(0, Math.min(255, parseInt(parts[1],10) || 0));
+    const b = Math.max(0, Math.min(255, parseInt(parts[2],10) || 0));
+    const a = parts[3] !== undefined ? Math.max(0, Math.min(1, parseFloat(parts[3]) || 0)) : 1;
+    return { r, g, b, a };
+}
+
+function rgbToHex(r,g,b){
+    const to2 = v => Math.max(0, Math.min(255, v)).toString(16).padStart(2, "0");
+    return `#${to2(r)}${to2(g)}${to2(b)}`;
+}
+
+function updateColorControl(key, cssValue){
+    const picker = document.getElementById(`markColor${key[0].toUpperCase()+key.slice(1)}Picker`);
+    const alpha = document.getElementById(`markColor${key[0].toUpperCase()+key.slice(1)}Alpha`);
+    const alphaVal = document.getElementById(`markColor${key[0].toUpperCase()+key.slice(1)}AlphaVal`);
+    const preview = document.getElementById(`markColor${key[0].toUpperCase()+key.slice(1)}Preview`);
+    if(!picker || !alpha || !alphaVal || !preview) return;
+    const rgba = parseCssColorToRgba(cssValue);
+    picker.value = rgbToHex(rgba.r, rgba.g, rgba.b);
+    alpha.value = String(rgba.a);
+    alphaVal.textContent = `${Math.round(rgba.a * 100)}%`;
+    preview.style.background = cssValue;
+}
+
+function setMarkColor(key, value){
+    if(!markColors.hasOwnProperty(key)) return;
+    const v = String(value || "").trim();
+    if(!v) return;
+    markColors[key] = v;
+    applyMarkColors();
+    saveMarkColors();
+    syncMarkColorInputs();
+}
+
+function onMarkColorPickerChange(key){
+    const picker = document.getElementById(`markColor${key[0].toUpperCase()+key.slice(1)}Picker`);
+    const alpha = document.getElementById(`markColor${key[0].toUpperCase()+key.slice(1)}Alpha`);
+    const alphaVal = document.getElementById(`markColor${key[0].toUpperCase()+key.slice(1)}AlphaVal`);
+    const preview = document.getElementById(`markColor${key[0].toUpperCase()+key.slice(1)}Preview`);
+    if(!picker || !alpha || !alphaVal || !preview) return;
+    const rgba = parseCssColorToRgba(picker.value);
+    const a = Math.max(0, Math.min(1, parseFloat(alpha.value) || 0));
+    const css = `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${a})`;
+    markColors[key] = css;
+    alphaVal.textContent = `${Math.round(a * 100)}%`;
+    preview.style.background = css;
+    applyMarkColors();
+    saveMarkColors();
+}
+
+function resetMarkColors(){
+    markColors = { ...markColorDefaults };
+    applyMarkColors();
+    saveMarkColors();
+    syncMarkColorInputs();
+}
+
+openCustomColorsOverlay = function(){
+    if(document.getElementById("customColorsOverlay")) return;
+    const overlay = document.createElement("div");
+    overlay.id = "customColorsOverlay";
+    overlay.className = "dbOverlay";
+    overlay.innerHTML = `
+        <div class="dbPanel" style="max-width:680px; margin:10vh auto;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <h3 style="margin:0;">Customowe kolory komórek zaznaczeniowych</h3>
+                <button class="btn btn-danger" style="margin-left:auto;" onclick="document.getElementById('customColorsOverlay').remove()">Zamknij</button>
+            </div>
+            <div class="settingsStack">
+                <div class="settingsLabel">Manualne zaznaczenie</div>
+                <div class="colorRow">
+                    <input id="markColorFixedPicker" type="color" class="colorPickerInput" oninput="onMarkColorPickerChange('fixed')">
+                    <input id="markColorFixedAlpha" type="range" class="alphaSlider" min="0" max="1" step="0.01" oninput="onMarkColorPickerChange('fixed')">
+                    <span id="markColorFixedAlphaVal">100%</span>
+                    <span id="markColorFixedPreview" class="colorPreviewBadge"></span>
+                </div>
+                <div class="settingsLabel">Zaznaczenie (odkryj wybrane)</div>
+                <div class="colorRow">
+                    <input id="markColorSelectPicker" type="color" class="colorPickerInput" oninput="onMarkColorPickerChange('select')">
+                    <input id="markColorSelectAlpha" type="range" class="alphaSlider" min="0" max="1" step="0.01" oninput="onMarkColorPickerChange('select')">
+                    <span id="markColorSelectAlphaVal">100%</span>
+                    <span id="markColorSelectPreview" class="colorPreviewBadge"></span>
+                </div>
+                <div class="settingsLabel">Zaznaczenie informacyjne</div>
+                <div class="colorRow">
+                    <input id="markColorInfoPicker" type="color" class="colorPickerInput" oninput="onMarkColorPickerChange('info')">
+                    <input id="markColorInfoAlpha" type="range" class="alphaSlider" min="0" max="1" step="0.01" oninput="onMarkColorPickerChange('info')">
+                    <span id="markColorInfoAlphaVal">100%</span>
+                    <span id="markColorInfoPreview" class="colorPreviewBadge"></span>
+                </div>
+                <div class="settingsLabel">Ignorowanie w losowym wartościowym</div>
+                <div class="colorRow">
+                    <input id="markColorExcludePicker" type="color" class="colorPickerInput" oninput="onMarkColorPickerChange('exclude')">
+                    <input id="markColorExcludeAlpha" type="range" class="alphaSlider" min="0" max="1" step="0.01" oninput="onMarkColorPickerChange('exclude')">
+                    <span id="markColorExcludeAlphaVal">100%</span>
+                    <span id="markColorExcludePreview" class="colorPreviewBadge"></span>
+                </div>
+                <div class="settingsLabel">Pusta komórka</div>
+                <div class="colorRow">
+                    <input id="markColorEmptyPicker" type="color" class="colorPickerInput" oninput="onMarkColorPickerChange('empty')">
+                    <input id="markColorEmptyAlpha" type="range" class="alphaSlider" min="0" max="1" step="0.01" oninput="onMarkColorPickerChange('empty')">
+                    <span id="markColorEmptyAlphaVal">100%</span>
+                    <span id="markColorEmptyPreview" class="colorPreviewBadge"></span>
+                </div>
+                <button class="btn btn-danger settingsBtn" onclick="resetMarkColors()">Resetuj</button>
+            </div>
+        </div>`;
+    document.body.appendChild(overlay);
+    syncMarkColorInputs();
+};
+
+openModeInfoOverlay = function(kind){
+    document.getElementById("modeInfoOverlay")?.remove();
+    const overlay = document.createElement("div");
+    overlay.id = "modeInfoOverlay";
+    overlay.className = "dbOverlay";
+    const txt = kind === "quiz"
+        ? `<p><b>Manualne:</b> sam wybierasz, które komórki mają być pokazane, reszta jest do wpisania.</p>
+           <p><b>Losowe:</b> na każdym wierszu losuje się liczba widocznych komórek.</p>
+           <p><b>Losowe wartościowe:</b> pokazuje stałą liczbę komórek z pola „Ile komórek...”, z pominięciem oznaczonych jako ignorowane.</p>`
+        : `<p><b>Zaznaczenie informacyjne:</b> oznaczone komórki są tylko informacją i zostają widoczne.</p>
+           <p><b>Ignoruj w losowym wartościowym:</b> te komórki nie są losowane jako widoczne w trybie losowe wartościowe.</p>
+           <p><b>Manualne zaznaczenie:</b> ręcznie wskazujesz komórki jako stałe (widoczne).</p>`;
+    overlay.innerHTML = `
+        <div class="dbPanel" style="max-width:700px; margin:10vh auto;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <h3 style="margin:0;">Opis trybów</h3>
+                <button class="btn btn-danger" style="margin-left:auto;" onclick="document.getElementById('modeInfoOverlay').remove()">Zamknij</button>
+            </div>
+            <div style="margin-top:10px;">${txt}</div>
+        </div>`;
+    document.body.appendChild(overlay);
+};
+
 function showEditorShortcutMask(mode){
     hideEditorShortcutMask();
     editorShortcutMode = mode;
@@ -2812,9 +3248,38 @@ applyHintTypeToCell = function(td, type){
     }
 };
 
+const __oldRenderTable = renderTable;
+renderTable = function(selectable=false){
+    __oldRenderTable(selectable);
+    refreshEmptyCells();
+};
+
+const __oldImportTableData = importTableData;
+importTableData = function(data){
+    __oldImportTableData(data);
+    ensureSelectedRowsState();
+    refreshSelectedRowsUi();
+    refreshEmptyCells();
+};
+
+const __oldConvertTable = convertTable;
+convertTable = function(){
+    __oldConvertTable();
+    ensureSelectedRowsState();
+    refreshSelectedRowsUi();
+};
+
+const __oldSaveEditedTable = saveEditedTable;
+saveEditedTable = function(){
+    __oldSaveEditedTable();
+    ensureSelectedRowsState();
+    refreshSelectedRowsUi();
+};
+
 const __oldStartQuiz = startQuiz;
 startQuiz = function(){
     __oldStartQuiz();
+    refreshEmptyCells();
     document.querySelectorAll("#tableContainer td[data-quizinput='1']").forEach(td=>{
         td.dataset.hintUsed = "0";
     });
@@ -2837,8 +3302,19 @@ updateCellClickHandlers = function(){
 
 const __oldCalculateStats = calculateStats;
 calculateStats = function(){
-    const quizCells = Array.from(document.querySelectorAll("#tableContainer td[data-quizinput='1']"));
-    if(!quizCells.length) return __oldCalculateStats();
+    const quizCells = Array.from(document.querySelectorAll("#tableContainer td[data-quizinput='1']"))
+        .filter(td => String(td.dataset.answer || "").trim() !== "");
+    if(!quizCells.length){
+        return `<p>Poprawnych odpowiedzi: 0/0 (0%)</p>
+            <p>Poprawnych za pierwszym razem: 0/0 (0%)</p>
+            <p>Skuteczność bez podpowiedzi: 0/0 (0%)</p>
+            <p>Najwieksza passa poprawnych odpowiedzi: 0</p>
+            <p>Najwieksza passa blednych odpowiedzi: 0</p>
+            <p>Bledy globalne: 0</p>
+            <p>Ilosc uzyc odkryj wybranych: 0</p>
+            <p>Komorki z najwieksza iloscia bledow:<br>Brak bledow</p>
+            <p>Czas trwania quizu: 0:00</p>`;
+    }
 
     let total = quizCells.length, correct = 0, firstTry = 0, errors = 0, usedDiscover = 0;
     let noHintTotal = 0, noHintCorrect = 0;
@@ -2872,7 +3348,7 @@ calculateStats = function(){
     const p1 = Math.round((correct/total)*100);
     const p2 = Math.round((firstTry/total)*100);
     const pNoHint = noHintTotal ? Math.round((noHintCorrect/noHintTotal)*100) : 0;
-    const sec = Math.max(0,Math.floor((Date.now()-quizStartTime)/1000));
+    const sec = Math.max(0,Math.floor(((quizEndTime ?? Date.now())-quizStartTime)/1000));
     const tm = `${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}`;
 
     return `<p>Poprawnych odpowiedzi: ${correct}/${total} (${p1}%)</p>
@@ -2953,7 +3429,16 @@ backToMenu = function(){
     hideQuizHintShortcutMask();
     clearSelectedQuizCell();
     hoveredQuizCell = null;
+    const statsCb = document.getElementById("showStatsCheckbox");
+    const prevStatsChecked = !!statsCb?.checked;
+    // On "Wróć" nie pokazujemy statystyk - mają się pojawiać po zakończeniu testu.
+    if(statsCb){
+        statsCb.checked = false;
+    }
     __oldBackToMenu();
+    if(statsCb){
+        statsCb.checked = prevStatsChecked;
+    }
 };
 
 const __oldClearAll = clearAll;
@@ -2962,11 +3447,19 @@ clearAll = function(){
     hideQuizHintShortcutMask();
     clearSelectedQuizCell();
     hoveredQuizCell = null;
+    selectedRowsMode = false;
+    selectedRowsSet = new Set();
     __oldClearAll();
+    refreshSelectedRowsUi();
 };
 
 loadUiPrefs();
+loadMarkColors();
 applyUiPrefs();
+applyMarkColors();
+refreshEmptyCells();
+ensureSelectedRowsState();
+refreshSelectedRowsUi();
 
 </script>
 
